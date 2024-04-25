@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Art-S-D/tfview/internal/style"
-	tea "github.com/charmbracelet/bubbletea"
 	tfjson "github.com/hashicorp/terraform-json"
 )
 
@@ -29,7 +28,7 @@ func StateModuleModelFromJson(json tfjson.StateModule) StateModuleModel {
 	return result
 }
 
-func (m *StateModuleModel) Height() int {
+func (m *StateModuleModel) RenderingHeight() int {
 	if !m.expanded {
 		return 1
 	}
@@ -42,10 +41,10 @@ func (m *StateModuleModel) Height() int {
 	}
 
 	for _, r := range m.resources {
-		out += r.Height()
+		out += r.RenderingHeight()
 	}
 	for _, c := range m.childModules {
-		out += c.Height()
+		out += c.RenderingHeight()
 	}
 	return out
 }
@@ -61,7 +60,7 @@ func (m *StateModuleModel) Selected(cursor int) CursorSelector {
 			cursor -= 1
 		}
 		for _, r := range m.resources {
-			height := r.Height()
+			height := r.RenderingHeight()
 			if cursor < height {
 				return r
 			} else {
@@ -69,7 +68,7 @@ func (m *StateModuleModel) Selected(cursor int) CursorSelector {
 			}
 		}
 		for _, c := range m.childModules {
-			height := c.Height()
+			height := c.RenderingHeight()
 			if cursor < height {
 				return c.Selected(cursor)
 			} else {
@@ -81,7 +80,7 @@ func (m *StateModuleModel) Selected(cursor int) CursorSelector {
 		if cursor == 0 && m.module.Address != "" {
 			return m
 		}
-		panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, m, m.Height()))
+		panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, m, m.RenderingHeight()))
 	}
 }
 
@@ -92,59 +91,7 @@ func (m *StateModuleModel) Toggle() {
 	m.expanded = !m.expanded
 }
 
-func (m *StateModuleModel) Init() tea.Cmd {
-	return nil
-}
-
-func (m *StateModuleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
-			return m, tea.Quit
-
-		}
-	}
-	return m, nil
-}
-
-func (m *StateModuleModel) View() string {
-	var sb strings.Builder
-
-	if m.module.Address != "" {
-		sb.WriteString(style.Type.Render("module"))
-		sb.WriteString(" ")
-		sb.WriteString(style.Key.Render(m.module.Address))
-		sb.WriteString(" {\n")
-	}
-
-	for _, resource := range m.resources {
-		if m.module.Address != "" {
-			sb.WriteString(style.Indented.Render(resource.View()))
-		} else {
-			// ignore indentation for the root module
-			sb.WriteString(resource.View())
-		}
-		sb.WriteString("\n")
-	}
-	for _, model := range m.childModules {
-		if m.module.Address != "" {
-			sb.WriteString(style.Indented.Render(model.View()))
-		} else {
-			// ignore indentation for the root module
-			sb.WriteString(model.View())
-		}
-		sb.WriteString("\n")
-	}
-
-	if m.module.Address != "" {
-		sb.WriteString("}")
-	}
-	result := sb.String()
-	return result
-}
-
-func (m *StateModuleModel) ViewCursor(cursor int) (view string, newCursor int) {
+func (m *StateModuleModel) View(cursor int) (view string, newCursor int) {
 	var sb strings.Builder
 
 	if m.module.Address == "" && !m.expanded {
@@ -170,19 +117,19 @@ func (m *StateModuleModel) ViewCursor(cursor int) (view string, newCursor int) {
 		sb.WriteString(style.Preview.Render("..."))
 		sb.WriteString("}")
 		return sb.String(), cursor
-	} else {
+	} else if m.module.Address != "" {
 		sb.WriteString("\n")
 	}
 
 	for _, resource := range m.resources {
 		if m.module.Address != "" {
 			var resourceView string
-			resourceView, cursor = resource.ViewCursor(cursor)
+			resourceView, cursor = resource.View(cursor)
 			sb.WriteString(style.Indented.Render(resourceView))
 		} else {
 			// ignore indentation for the root module
 			var resourceView string
-			resourceView, cursor = resource.ViewCursor(cursor)
+			resourceView, cursor = resource.View(cursor)
 			sb.WriteString(resourceView)
 		}
 		sb.WriteString("\n")
@@ -190,12 +137,12 @@ func (m *StateModuleModel) ViewCursor(cursor int) (view string, newCursor int) {
 	for _, model := range m.childModules {
 		if m.module.Address != "" {
 			var modelView string
-			modelView, cursor = model.ViewCursor(cursor)
+			modelView, cursor = model.View(cursor)
 			sb.WriteString(style.Indented.Render(modelView))
 		} else {
 			// ignore indentation for the root module
 			var modelView string
-			modelView, cursor = model.ViewCursor(cursor)
+			modelView, cursor = model.View(cursor)
 			sb.WriteString(modelView)
 		}
 		sb.WriteString("\n")
