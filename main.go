@@ -19,52 +19,6 @@ type stateModel struct {
 	rootModuleHeight          int
 }
 
-func (m *stateModel) Init() tea.Cmd {
-	m.rootModuleHeight = m.rootModule.RenderingHeight()
-	return nil
-}
-func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
-			return m, tea.Quit
-		case "up":
-			m.cursorUp()
-			return m, nil
-		case "down":
-			m.cursorDown()
-			return m, nil
-		case "enter":
-			selected := m.rootModule.Selected(m.cursor)
-			selected.Toggle()
-			m.rootModuleHeight = m.rootModule.RenderingHeight()
-			m.clampOffset()
-			m.clampCursor()
-		}
-	case tea.WindowSizeMsg:
-		m.screenHeight = msg.Height
-		m.screenWidth = msg.Width
-
-		m.clampOffset()
-	}
-	return m, nil
-}
-
-func (m *stateModel) View() string {
-	view, _ := m.rootModule.View(m.cursor)
-	lines := strings.Split(view, "\n")
-	linesInView := lines[m.offset : m.offset+m.screenHeight]
-	if len(linesInView) > 1 {
-		selection := m.rootModule.Selected(m.cursor)
-		selectionName := selection.Address()
-		linesInView[len(linesInView)-1] = style.Selection.Copy().
-			PaddingRight(m.screenWidth - len(selectionName)).
-			Render(selectionName)
-	}
-	return strings.Join(linesInView, "\n")
-}
-
 func (m *stateModel) clampOffset() {
 	if m.offset < 0 {
 		m.offset = 0
@@ -112,6 +66,61 @@ func (m *stateModel) clampCursor() {
 	if m.cursor >= screenBottom {
 		m.cursor = screenBottom
 	}
+}
+
+func (m *stateModel) Init() tea.Cmd {
+	m.rootModuleHeight = m.rootModule.RenderingHeight()
+	return nil
+}
+func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q", "esc":
+			return m, tea.Quit
+		case "up":
+			m.cursorUp()
+			return m, nil
+		case "down":
+			m.cursorDown()
+			return m, nil
+		case "enter":
+			selected := m.rootModule.Selected(m.cursor)
+			selected.Toggle()
+			m.rootModuleHeight = m.rootModule.RenderingHeight()
+			m.clampOffset()
+			m.clampCursor()
+		}
+	case tea.WindowSizeMsg:
+		m.screenHeight = msg.Height
+		m.screenWidth = msg.Width
+
+		m.clampOffset()
+	}
+	return m, nil
+}
+
+func (m *stateModel) View() string {
+	view, _ := m.rootModule.View(m.cursor)
+	lines := strings.Split(view, "\n")
+	linesInView := lines[m.offset : m.offset+m.screenHeight]
+	if len(linesInView) > 1 {
+		selection := m.rootModule.Selected(m.cursor)
+		selectionName := selection.Address()
+
+		helpText := "[?]help [q]quit "
+		previewLine := fmt.Sprintf(
+			"%s%s%s",
+			selectionName,
+			strings.Repeat(" ", m.screenWidth-len(selectionName)-len(helpText)),
+			helpText,
+		)
+
+		linesInView[len(linesInView)-1] = style.Selection.Copy().
+			PaddingRight(m.screenWidth - len(selectionName)).
+			Render(previewLine)
+	}
+	return strings.Join(linesInView, "\n")
 }
 
 func main() {

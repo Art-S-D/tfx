@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var Default lipgloss.Style
 var Type lipgloss.Style
 var Key lipgloss.Style
 var String lipgloss.Style
@@ -21,6 +22,7 @@ var Cursor lipgloss.Style
 var Selection lipgloss.Style
 
 func init() {
+	Default = lipgloss.NewStyle()
 	Key = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("4"))
 	String = lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
 	Boolean = lipgloss.NewStyle().Foreground(lipgloss.Color("5"))
@@ -70,5 +72,14 @@ func Render(json any) string {
 	} else {
 		jsonType := reflect.TypeOf(json)
 		panic(fmt.Sprintf("unknown json value %v of type %v", json, jsonType))
+	}
+}
+
+// renders the string with the style `usedStyle` of with the cursor style if the cursor value is 0
+func RenderStyleOrCursor(cursor int, usedStyle lipgloss.Style, str string) string {
+	if cursor == 0 {
+		return Cursor.Render(str)
+	} else {
+		return usedStyle.Render(str)
 	}
 }

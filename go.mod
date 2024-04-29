@@ -1,6 +1,6 @@
 module github.com/Art-S-D/tfview
 
-go 1.21.0
+go 1.22.2
 
 require (
 	github.com/charmbracelet/bubbletea v0.25.0

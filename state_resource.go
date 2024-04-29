@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 
@@ -30,34 +29,32 @@ func (m *StateResourceModel) Toggle() {
 	m.expanded = !m.expanded
 }
 
-func (m *StateResourceModel) View(cursor int) (out string, newCursor int) {
-	var sb strings.Builder
-
+func (m *StateResourceModel) resourceIndex() string {
+	return resourceIndexToStr(m.resource.Index)
+}
+func (m *StateResourceModel) resourceMode() string {
 	resourceMode := "resource"
 	if m.resource.Mode == tfjson.DataResourceMode {
 		resourceMode = "data"
 	}
+	return resourceMode
+}
 
-	if cursor == 0 {
-		sb.WriteString(
-			style.Cursor.Render(
-				resourceMode,
-				fmt.Sprintf("\"%s\"", m.resource.Type),
-				fmt.Sprintf("\"%s\"", m.resource.Name),
-			),
-		)
-	} else {
-		sb.WriteString(
-			fmt.Sprintf(
-				"%s %s %s",
-				style.Type.Render(resourceMode),
-				style.Key.Render(fmt.Sprintf("\"%s\"", m.resource.Type)),
-				style.Key.Render(fmt.Sprintf("\"%s\"", m.resource.Name)),
-			),
-		)
+func (m *StateResourceModel) View(cursor int) (out string, newCursor int) {
+	var sb strings.Builder
+
+	// render first line (without the final brace)
+	sb.WriteString(style.RenderStyleOrCursor(cursor, style.Type, m.resourceMode()))
+	sb.WriteString(style.RenderStyleOrCursor(cursor, style.Default, " "))
+	sb.WriteString(style.RenderStyleOrCursor(cursor, style.Key, m.resource.Type))
+	sb.WriteString(style.RenderStyleOrCursor(cursor, style.Key, m.resource.Name))
+	if m.resource.Index != nil {
+		sb.WriteString(style.RenderStyleOrCursor(cursor, style.Default, " "))
+		sb.WriteString(style.RenderStyleOrCursor(cursor, style.Key, m.resourceIndex()))
 	}
 	cursor -= 1
 
+	// render braces
 	if !m.expanded {
 		sb.WriteString(" {")
 		sb.WriteString(style.Preview.Render("..."))
@@ -67,19 +64,18 @@ func (m *StateResourceModel) View(cursor int) (out string, newCursor int) {
 		sb.WriteString(" {\n")
 	}
 
+	// render resource body
 	keys := utils.KeysOrdered(m.resource.AttributeValues)
 	longestKey := slices.MaxFunc(keys, func(s1, s2 string) int { return len(s1) - len(s2) })
 	for _, k := range keys {
 		v := m.resource.AttributeValues[k]
 		sb.WriteString("  ")
 
-		usedStyle := style.Key
-		if cursor == 0 {
-			usedStyle = style.Cursor
-		}
-		renderedKey := usedStyle.Copy().MarginRight(len(longestKey) - len(k)).Render(k)
+		sb.WriteString(style.RenderStyleOrCursor(cursor, style.Key, k))
 
-		sb.WriteString(renderedKey)
+		for range len(longestKey) - len(k) {
+			sb.WriteRune(' ')
+		}
 
 		sb.WriteString(" = ")
 		sb.WriteString(style.Render(v))
@@ -87,11 +83,9 @@ func (m *StateResourceModel) View(cursor int) (out string, newCursor int) {
 		cursor -= 1
 	}
 
-	if cursor == 0 {
-		sb.WriteString(style.Cursor.Render("}"))
-	} else {
-		sb.WriteRune('}')
-	}
+	// render braces
+	sb.WriteString(style.RenderStyleOrCursor(cursor, style.Default, "}"))
+
 	cursor -= 1
 	return sb.String(), cursor
 }
