@@ -47,6 +47,7 @@ func (m *StateResourceModel) View(cursor int) (out string, newCursor int) {
 	sb.WriteString(style.RenderStyleOrCursor(cursor, style.Type, m.resourceMode()))
 	sb.WriteString(style.RenderStyleOrCursor(cursor, style.Default, " "))
 	sb.WriteString(style.RenderStyleOrCursor(cursor, style.Key, m.resource.Type))
+	sb.WriteString(style.RenderStyleOrCursor(cursor, style.Default, " "))
 	sb.WriteString(style.RenderStyleOrCursor(cursor, style.Key, m.resource.Name))
 	if m.resource.Index != nil {
 		sb.WriteString(style.RenderStyleOrCursor(cursor, style.Default, " "))
