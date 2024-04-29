@@ -99,17 +99,10 @@ func (m *StateModuleModel) View(cursor int) (view string, newCursor int) {
 	}
 
 	if m.module.Address != "" {
-		if cursor == 0 {
-			sb.WriteString(style.Cursor.Render("module"))
-			sb.WriteString(style.Cursor.Render(" "))
-			sb.WriteString(style.Cursor.Render(m.module.Address))
-			sb.WriteString(" {")
-		} else {
-			sb.WriteString(style.Type.Render("module"))
-			sb.WriteString(" ")
-			sb.WriteString(style.Key.Render(m.module.Address))
-			sb.WriteString(" {")
-		}
+		sb.WriteString(style.RenderStyleOrCursor(cursor, style.Type, "module"))
+		sb.WriteString(style.RenderStyleOrCursor(cursor, style.Default, " "))
+		sb.WriteString(style.RenderStyleOrCursor(cursor, style.Key, m.module.Address))
+		sb.WriteString(" {")
 		cursor -= 1
 	}
 
