@@ -17,6 +17,10 @@ type stateModel struct {
 	offset                    int // should always be between [0, rootModule.Height() - screenHeight)
 	rootModule                StateModuleModel
 	rootModuleHeight          int
+
+	// make the screen move with the cursor if the cursor is at a distance lower
+	// than `screenDrag` to the top or the bottom of the screen
+	screenDrag int
 }
 
 func (m *stateModel) clampOffset() {
@@ -38,7 +42,7 @@ func (m *stateModel) cursorUp() {
 	if m.cursor < 0 {
 		m.cursor = 0
 	}
-	if m.cursor <= m.offset+3 {
+	if m.cursor <= m.offset+m.screenDrag {
 		m.offset -= 1
 	}
 	m.clampOffset()
@@ -51,7 +55,7 @@ func (m *stateModel) cursorDown() {
 	if m.cursor >= screenBottom {
 		m.cursor = screenBottom
 	}
-	if m.cursor >= screenBottom-3 {
+	if m.cursor >= screenBottom-m.screenDrag {
 		m.offset += 1
 	}
 	m.clampOffset()
@@ -72,6 +76,7 @@ func (m *stateModel) Init() tea.Cmd {
 	m.rootModuleHeight = m.rootModule.RenderingHeight()
 	return nil
 }
+
 func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -137,7 +142,7 @@ func main() {
 		panic(fmt.Errorf("failed to read json state %w", err))
 	}
 
-	terraformState := stateModel{rootModule: StateModuleModelFromJson(*plan.Values.RootModule)}
+	terraformState := stateModel{rootModule: StateModuleModelFromJson(*plan.Values.RootModule), screenDrag: 3}
 	terraformState.rootModule.expanded = true
 	p := tea.NewProgram(&terraformState)
 	if _, err := p.Run(); err != nil {
