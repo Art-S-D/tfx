@@ -85,8 +85,9 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursorDown()
 			return m, nil
 		case "enter":
-			selected := m.rootModule.Selected(m.cursor)
+			selected, selectedLine := m.rootModule.Selected(m.cursor)
 			selected.Toggle()
+			m.cursor -= selectedLine
 			m.rootModuleHeight = m.rootModule.RenderingHeight()
 			m.clampOffset()
 			m.clampCursor()
@@ -105,7 +106,7 @@ func (m *stateModel) View() string {
 	lines := strings.Split(view, "\n")
 	linesInView := lines[m.offset : m.offset+m.screenHeight]
 	if len(linesInView) > 1 {
-		selection := m.rootModule.Selected(m.cursor)
+		selection, _ := m.rootModule.Selected(m.cursor)
 		selectionName := selection.Address()
 
 		helpText := "[?]help [q]quit "

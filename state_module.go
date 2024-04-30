@@ -49,11 +49,11 @@ func (m *StateModuleModel) RenderingHeight() int {
 	return out
 }
 
-func (m *StateModuleModel) Selected(cursor int) CursorSelector {
+func (m *StateModuleModel) Selected(cursor int) (selected CursorSelector, cursorPosition int) {
 	if cursor < 0 {
 		panic(fmt.Sprintf("negative cursor %d on %v", cursor, m))
 	} else if cursor == 0 && m.module.Address != "" {
-		return m
+		return m, 0
 	} else {
 		// add one line to account for the module name
 		if m.module.Address != "" {
@@ -62,7 +62,7 @@ func (m *StateModuleModel) Selected(cursor int) CursorSelector {
 		for _, r := range m.resources {
 			height := r.RenderingHeight()
 			if cursor < height {
-				return r
+				return r, cursor
 			} else {
 				cursor -= height
 			}
@@ -78,7 +78,7 @@ func (m *StateModuleModel) Selected(cursor int) CursorSelector {
 
 		// closing bracket of the module is selected
 		if cursor == 0 && m.module.Address != "" {
-			return m
+			return m, m.RenderingHeight()
 		}
 		panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, m, m.RenderingHeight()))
 	}
