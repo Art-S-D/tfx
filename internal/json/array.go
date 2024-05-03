@@ -39,21 +39,25 @@ func (a *jsonArray) Selected(cursor int) (selected render.Model, cursorPosition 
 	if cursor == 0 {
 		return a, 0
 	}
+	cursor -= 1
 	for _, v := range a.value {
 		height := v.ViewHeight()
 		if cursor < height {
-			return v, cursor
+			return v.Selected(cursor)
 		} else {
 			cursor -= height
 		}
 	}
 	if cursor == 0 {
-		return a, a.ViewHeight()
+		return a, a.ViewHeight() - 1
 	}
 	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, a, a.ViewHeight()))
 }
 
 func (a *jsonArray) View(params render.ViewParams) string {
+	if len(a.value) == 0 {
+		return style.RenderStyleOrCursor(params.Cursor, style.Default, "[]")
+	}
 	if !a.expanded {
 		var sb strings.Builder
 		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "["))
@@ -62,7 +66,7 @@ func (a *jsonArray) View(params render.ViewParams) string {
 		return sb.String()
 	} else {
 		var sb strings.Builder
-		sb.WriteRune('[')
+		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "["))
 		params.Cursor -= 1
 		for i, v := range a.value {
 			sb.WriteString("\n")
@@ -72,7 +76,8 @@ func (a *jsonArray) View(params render.ViewParams) string {
 				sb.WriteRune(',')
 			}
 		}
-		sb.WriteString("\n]")
+		sb.WriteString("\n")
+		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "]"))
 		return sb.String()
 	}
 }

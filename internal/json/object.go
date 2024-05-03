@@ -43,21 +43,27 @@ func (o *jsonObject) Selected(cursor int) (selected render.Model, cursorPosition
 	if cursor == 0 {
 		return o, 0
 	}
-	for _, v := range o.value {
+	cursor -= 1
+	for _, k := range o.Keys() {
+		v := o.value[k]
 		height := v.ViewHeight()
 		if cursor < height {
-			return v, cursor
+			return v.Selected(cursor)
 		} else {
 			cursor -= height
 		}
 	}
 	if cursor == 0 {
-		return o, o.ViewHeight()
+		return o, o.ViewHeight() - 1
 	}
 	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, o, o.ViewHeight()))
 }
 
 func (o *jsonObject) View(params render.ViewParams) string {
+	if len(o.value) == 0 {
+		return style.RenderStyleOrCursor(params.Cursor, style.Default, "{}")
+	}
+
 	if !o.expanded {
 		var sb strings.Builder
 		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "{"))
@@ -66,19 +72,21 @@ func (o *jsonObject) View(params render.ViewParams) string {
 		return sb.String()
 	} else {
 		var sb strings.Builder
-		sb.WriteRune('{')
+		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "{"))
+		params.Cursor -= 1
 		keys := o.Keys()
 		for i, k := range keys {
 			sb.WriteString("\n")
 			sb.WriteString(style.Indented.Render(style.Key.Render(fmt.Sprintf("\"%v\"", k))))
 			sb.WriteString("=")
-			sb.WriteString(o.value[k].View(params))
+			sb.WriteString(style.Indented.Render(o.value[k].View(params)))
 			params.Cursor -= o.value[k].ViewHeight()
 			if i < len(keys)-1 {
 				sb.WriteRune(',')
 			}
 		}
-		sb.WriteString("\n}")
+		sb.WriteString("\n")
+		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "}"))
 		return sb.String()
 	}
 }
