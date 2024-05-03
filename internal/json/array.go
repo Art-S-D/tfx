@@ -65,8 +65,8 @@ func (a *jsonArray) View(params render.ViewParams) string {
 		sb.WriteRune('[')
 		params.Cursor -= 1
 		for i, v := range a.value {
-			sb.WriteString("\n  ")
-			sb.WriteString(v.View(params))
+			sb.WriteString("\n")
+			sb.WriteString(style.Indented.Render(v.View(params)))
 			params.Cursor -= v.ViewHeight()
 			if i < len(a.value)-1 {
 				sb.WriteRune(',')

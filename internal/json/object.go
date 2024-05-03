@@ -69,8 +69,8 @@ func (o *jsonObject) View(params render.ViewParams) string {
 		sb.WriteRune('{')
 		keys := o.Keys()
 		for i, k := range keys {
-			sb.WriteString("\n  ")
-			sb.WriteString(style.Key.Render(fmt.Sprintf("\"%v\"", k)))
+			sb.WriteString("\n")
+			sb.WriteString(style.Indented.Render(style.Key.Render(fmt.Sprintf("\"%v\"", k))))
 			sb.WriteString("=")
 			// TODO: change cursor depending on height
 			sb.WriteString(o.value[k].View(params))
