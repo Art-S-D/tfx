@@ -63,7 +63,7 @@ func (m *StateModuleModel) Selected(cursor int) (selected render.Model, cursorPo
 		for _, r := range m.resources {
 			height := r.ViewHeight()
 			if cursor < height {
-				return r, cursor
+				return r.Selected(cursor)
 			} else {
 				cursor -= height
 			}
@@ -79,7 +79,7 @@ func (m *StateModuleModel) Selected(cursor int) (selected render.Model, cursorPo
 
 		// closing bracket of the module is selected
 		if cursor == 0 && m.module.Address != "" {
-			return m, m.ViewHeight()
+			return m, m.ViewHeight() - 1
 		}
 		panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, m, m.ViewHeight()))
 	}

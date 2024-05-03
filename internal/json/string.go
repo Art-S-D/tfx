@@ -1,6 +1,8 @@
 package json
 
 import (
+	"fmt"
+
 	"github.com/Art-S-D/tfview/internal/render"
 	"github.com/Art-S-D/tfview/internal/style"
 )
@@ -23,5 +25,5 @@ func (s *jsonString) Selected(cursor int) (selected render.Model, cursorPosition
 	return s, 0
 }
 func (s *jsonString) View(params render.ViewParams) string {
-	return style.RenderStyleOrCursor(params.Cursor, style.String, s.value)
+	return style.RenderStyleOrCursor(params.Cursor, style.String, fmt.Sprintf("\"%s\"", s.value))
 }

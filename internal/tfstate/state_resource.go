@@ -22,7 +22,8 @@ type StateResourceModel struct {
 func NewStateResourceModel(resource *tfjson.StateResource) *StateResourceModel {
 	out := StateResourceModel{resource, make(map[string]render.Model), false}
 	for k, v := range resource.AttributeValues {
-		out.attributes[k] = json.ParseValue(v, resource.Address)
+		addr := fmt.Sprintf("%s.%s", resource.Address, k)
+		out.attributes[k] = json.ParseValue(v, addr)
 	}
 	return &out
 }
@@ -58,16 +59,18 @@ func (m *StateResourceModel) Selected(cursor int) (selected render.Model, cursor
 	if cursor == 0 {
 		return m, 0
 	}
-	for _, v := range m.attributes {
+	cursor -= 1
+	for _, k := range m.Keys() {
+		v := m.attributes[k]
 		height := v.ViewHeight()
 		if cursor < height {
-			return v, cursor
+			return v.Selected(cursor)
 		} else {
 			cursor -= height
 		}
 	}
 	if cursor == 0 {
-		return m, m.ViewHeight()
+		return m, m.ViewHeight() - 1
 	}
 	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, m, m.ViewHeight()))
 }
@@ -121,7 +124,7 @@ func (m *StateResourceModel) View(params render.ViewParams) string {
 		}
 
 		sb.WriteString(" = ")
-		sb.WriteString(v.View(params))
+		sb.WriteString(style.Indented.Render(v.View(params)))
 		sb.WriteString("\n")
 		params.Cursor -= v.ViewHeight()
 	}
