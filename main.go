@@ -6,7 +6,9 @@ import (
 	"io"
 	"strings"
 
+	"github.com/Art-S-D/tfview/internal/render"
 	"github.com/Art-S-D/tfview/internal/style"
+	"github.com/Art-S-D/tfview/internal/tfstate"
 	tea "github.com/charmbracelet/bubbletea"
 	tfjson "github.com/hashicorp/terraform-json"
 )
@@ -15,7 +17,7 @@ type stateModel struct {
 	screenWidth, screenHeight int
 	cursor                    int
 	offset                    int // should always be between [0, rootModule.Height() - screenHeight)
-	rootModule                StateModuleModel
+	rootModule                tfstate.StateModuleModel
 	rootModuleHeight          int
 
 	// make the screen move with the cursor if the cursor is at a distance lower
@@ -73,7 +75,7 @@ func (m *stateModel) clampCursor() {
 }
 
 func (m *stateModel) Init() tea.Cmd {
-	m.rootModuleHeight = m.rootModule.RenderingHeight()
+	m.rootModuleHeight = m.rootModule.ViewHeight()
 	return nil
 }
 
@@ -90,10 +92,16 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursorDown()
 			return m, nil
 		case "enter":
+			selected, _ := m.rootModule.Selected(m.cursor)
+			selected.Expand()
+			m.rootModuleHeight = m.rootModule.ViewHeight()
+			m.clampOffset()
+			m.clampCursor()
+		case "backspace":
 			selected, selectedLine := m.rootModule.Selected(m.cursor)
-			selected.Toggle()
+			selected.Collapse()
 			m.cursor -= selectedLine
-			m.rootModuleHeight = m.rootModule.RenderingHeight()
+			m.rootModuleHeight = m.rootModule.ViewHeight()
 			m.clampOffset()
 			m.clampCursor()
 		}
@@ -107,7 +115,7 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *stateModel) View() string {
-	view, _ := m.rootModule.View(m.cursor)
+	view := m.rootModule.View(render.ViewParams{Cursor: m.cursor, Width: m.screenWidth})
 	lines := strings.Split(view, "\n")
 	linesInView := lines[m.offset : m.offset+m.screenHeight]
 	if len(linesInView) > 1 {
@@ -142,8 +150,8 @@ func main() {
 		panic(fmt.Errorf("failed to read json state %w", err))
 	}
 
-	terraformState := stateModel{rootModule: StateModuleModelFromJson(*plan.Values.RootModule), screenDrag: 3}
-	terraformState.rootModule.expanded = true
+	terraformState := stateModel{rootModule: tfstate.StateModuleModelFromJson(*plan.Values.RootModule), screenDrag: 3}
+	terraformState.rootModule.Expand()
 	p := tea.NewProgram(&terraformState)
 	if _, err := p.Run(); err != nil {
 		panic(err.Error())
