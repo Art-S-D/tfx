@@ -107,36 +107,36 @@ func (m *StateModuleModel) View(params render.ViewParams) string {
 		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, " "))
 		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Key, m.module.Address))
 		sb.WriteString(" {")
-		params.Cursor -= 1
-	}
 
-	if !m.expanded {
-		sb.WriteString(style.Preview.Render("..."))
-		sb.WriteString("}")
-		return sb.String()
-	} else if m.module.Address != "" {
-		sb.WriteString("\n")
+		if !m.expanded {
+			sb.WriteString(style.Preview.Render("..."))
+			sb.WriteString("}")
+			return sb.String()
+		} else {
+			sb.WriteString("\n")
+			params.Cursor -= 1
+		}
 	}
 
 	for _, resource := range m.resources {
 		if m.module.Address != "" {
-			params.Cursor -= resource.ViewHeight()
 			sb.WriteString(style.Indented.Render(resource.View(params)))
+			params.Cursor -= resource.ViewHeight()
 		} else {
 			// ignore indentation for the root module
-			params.Cursor -= resource.ViewHeight()
 			sb.WriteString(resource.View(params))
+			params.Cursor -= resource.ViewHeight()
 		}
 		sb.WriteString("\n")
 	}
 	for _, model := range m.childModules {
 		if m.module.Address != "" {
-			params.Cursor -= model.ViewHeight()
 			sb.WriteString(style.Indented.Render(model.View(params)))
+			params.Cursor -= model.ViewHeight()
 		} else {
 			// ignore indentation for the root module
-			params.Cursor -= model.ViewHeight()
 			sb.WriteString(model.View(params))
+			params.Cursor -= model.ViewHeight()
 		}
 		sb.WriteString("\n")
 	}

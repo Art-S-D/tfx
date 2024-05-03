@@ -96,7 +96,6 @@ func (m *StateResourceModel) View(params render.ViewParams) string {
 		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, " "))
 		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Key, m.resourceIndex()))
 	}
-	params.Cursor -= 1
 
 	// render braces
 	if !m.expanded {
@@ -106,6 +105,7 @@ func (m *StateResourceModel) View(params render.ViewParams) string {
 		return sb.String()
 	} else {
 		sb.WriteString(" {\n")
+		params.Cursor -= 1
 	}
 
 	// render resource body

@@ -72,8 +72,8 @@ func (o *jsonObject) View(params render.ViewParams) string {
 			sb.WriteString("\n")
 			sb.WriteString(style.Indented.Render(style.Key.Render(fmt.Sprintf("\"%v\"", k))))
 			sb.WriteString("=")
-			// TODO: change cursor depending on height
 			sb.WriteString(o.value[k].View(params))
+			params.Cursor -= o.value[k].ViewHeight()
 			if i < len(keys)-1 {
 				sb.WriteRune(',')
 			}
