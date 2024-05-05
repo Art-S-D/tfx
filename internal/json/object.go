@@ -76,11 +76,21 @@ func (o *jsonObject) View(params render.ViewParams) string {
 		params.Cursor -= 1
 		keys := o.Keys()
 		for i, k := range keys {
+			v := o.value[k]
+
 			sb.WriteString("\n")
-			sb.WriteString(style.Indented.Render(style.Key.Render(fmt.Sprintf("\"%v\"", k))))
-			sb.WriteString("=")
-			sb.WriteString(style.Indented.Render(o.value[k].View(params)))
-			params.Cursor -= o.value[k].ViewHeight()
+			quotedKey := fmt.Sprintf("\"%v\"", k)
+			sb.WriteString(style.Indented.Render(style.RenderStyleOrCursor(params.Cursor, style.Key, quotedKey)))
+
+			// this makes it so that only the key is selected instead of the key and the value
+			vParams := params
+			if params.Cursor == 0 {
+				vParams.Cursor -= 1
+			}
+
+			sb.WriteString(" : ")
+			sb.WriteString(style.Indented.Render(v.View(vParams)))
+			params.Cursor -= v.ViewHeight()
 			if i < len(keys)-1 {
 				sb.WriteRune(',')
 			}

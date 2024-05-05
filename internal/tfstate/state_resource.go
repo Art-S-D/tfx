@@ -124,7 +124,14 @@ func (m *StateResourceModel) View(params render.ViewParams) string {
 		}
 
 		sb.WriteString(" = ")
-		sb.WriteString(style.Indented.Render(v.View(params)))
+
+		// this makes it so that only the key is selected instead of the key and the value
+		vParams := params
+		if params.Cursor == 0 {
+			vParams.Cursor -= 1
+		}
+
+		sb.WriteString(style.Indented.Render(v.View(vParams)))
 		sb.WriteString("\n")
 		params.Cursor -= v.ViewHeight()
 	}
