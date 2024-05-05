@@ -25,7 +25,7 @@ func (n *jsonNumber) Selected(cursor int) (selected render.Model, cursorPosition
 	return n, 0
 }
 
-func (n *jsonNumber) View(params render.ViewParams) string {
+func (n *jsonNumber) View(r *render.Renderer) {
 	v := fmt.Sprintf("%.2f", n.value)
-	return style.RenderStyleOrCursor(params.Cursor, style.Number, v)
+	r.CursorWrite(style.Number, v)
 }

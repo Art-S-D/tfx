@@ -2,7 +2,6 @@ package json
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/Art-S-D/tfview/internal/render"
 	"github.com/Art-S-D/tfview/internal/style"
@@ -54,30 +53,29 @@ func (a *jsonArray) Selected(cursor int) (selected render.Model, cursorPosition 
 	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, a, a.ViewHeight()))
 }
 
-func (a *jsonArray) View(params render.ViewParams) string {
+func (a *jsonArray) View(r *render.Renderer) {
 	if len(a.value) == 0 {
-		return style.RenderStyleOrCursor(params.Cursor, style.Default, "[]")
+		r.CursorWrite(style.Default, "[]")
+		return
 	}
 	if !a.expanded {
-		var sb strings.Builder
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "["))
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Preview, "..."))
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "]"))
-		return sb.String()
+		r.CursorWrite(style.Default, "[")
+		r.CursorWrite(style.Preview, "...")
+		r.CursorWrite(style.Default, "]")
+		return
 	} else {
-		var sb strings.Builder
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "["))
-		params.Cursor -= 1
+		r.CursorWrite(style.Default, "[")
+		r.IndentRight()
+
 		for i, v := range a.value {
-			sb.WriteString("\n")
-			sb.WriteString(style.Indented.Render(v.View(params)))
-			params.Cursor -= v.ViewHeight()
+			r.NewLine()
+			v.View(r)
 			if i < len(a.value)-1 {
-				sb.WriteRune(',')
+				r.Write(",")
 			}
 		}
-		sb.WriteString("\n")
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "]"))
-		return sb.String()
+		r.IndentLeft()
+		r.NewLine()
+		r.CursorWrite(style.Default, "]")
 	}
 }

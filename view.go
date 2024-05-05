@@ -8,25 +8,33 @@ import (
 	"github.com/Art-S-D/tfview/internal/style"
 )
 
-func (m *stateModel) View() string {
-	view := m.rootModule.View(render.ViewParams{Cursor: m.cursor, Width: m.screenWidth, Indentation: 0})
-	lines := strings.Split(view, "\n")
-	linesInView := lines[m.offset : m.offset+m.screenHeight]
-	if len(linesInView) > 1 {
-		selection, _ := m.rootModule.Selected(m.cursor)
-		selectionName := selection.Address()
+func (m *stateModel) previewLine() string {
+	selection, _ := m.rootModule.Selected(m.cursor)
+	selectionName := selection.Address()
 
-		helpText := "[?]help [q]quit "
-		previewLine := fmt.Sprintf(
+	helpText := "[?]help [q]quit "
+	var previewLine string
+	if m.screenWidth > len(selectionName)+len(helpText) {
+		previewLine = fmt.Sprintf(
 			"%s%s%s",
 			selectionName,
 			strings.Repeat(" ", m.screenWidth-len(selectionName)-len(helpText)),
 			helpText,
 		)
-
-		linesInView[len(linesInView)-1] = style.Selection.Copy().
-			PaddingRight(m.screenWidth - len(selectionName)).
-			Render(previewLine)
+	} else {
+		previewLine = helpText
 	}
-	return strings.Join(linesInView, "\n")
+	return style.Selection.Render(previewLine)
+}
+
+func (m *stateModel) View() string {
+	renderer := render.NewRenderer(
+		m.cursor,
+		m.screenStart,
+		m.screenWidth,
+		m.screenHeight,
+		m.previewLine(),
+	)
+	m.rootModule.View(renderer)
+	return renderer.String()
 }

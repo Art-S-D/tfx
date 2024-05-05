@@ -2,7 +2,6 @@ package json
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/Art-S-D/tfview/internal/render"
 	"github.com/Art-S-D/tfview/internal/style"
@@ -59,44 +58,48 @@ func (o *jsonObject) Selected(cursor int) (selected render.Model, cursorPosition
 	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, o, o.ViewHeight()))
 }
 
-func (o *jsonObject) View(params render.ViewParams) string {
+func (o *jsonObject) View(r *render.Renderer) {
 	if len(o.value) == 0 {
-		return style.RenderStyleOrCursor(params.Cursor, style.Default, "{}")
+		r.CursorWrite(style.Default, "{}")
+		return
 	}
 
 	if !o.expanded {
-		var sb strings.Builder
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "{"))
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Preview, "..."))
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "}"))
-		return sb.String()
+		r.CursorWrite(style.Default, "{")
+		r.CursorWrite(style.Preview, "...")
+		r.CursorWrite(style.Preview, "}")
+		return
 	} else {
-		var sb strings.Builder
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "{"))
-		params.Cursor -= 1
+		r.CursorWrite(style.Default, "{")
+		r.IndentRight()
+
 		keys := o.Keys()
 		for i, k := range keys {
 			v := o.value[k]
 
-			sb.WriteString("\n")
+			r.NewLine()
 			quotedKey := fmt.Sprintf("\"%v\"", k)
-			sb.WriteString(style.Indented.Render(style.RenderStyleOrCursor(params.Cursor, style.Key, quotedKey)))
+			r.CursorWrite(style.Key, quotedKey)
 
 			// this makes it so that only the key is selected instead of the key and the value
-			vParams := params
-			if params.Cursor == 0 {
-				vParams.Cursor -= 1
-			}
+			// FIXME
+			// vParams := params
+			// if params.Cursor == 0 {
+			// 	vParams.Cursor -= 1
+			// }
 
-			sb.WriteString(" : ")
-			sb.WriteString(style.Indented.Render(v.View(vParams)))
-			params.Cursor -= v.ViewHeight()
+			r.Write(" : ")
+
+			r.IndentRight()
+			v.View(r)
+			r.IndentLeft()
+
 			if i < len(keys)-1 {
-				sb.WriteRune(',')
+				r.Write(",")
 			}
 		}
-		sb.WriteString("\n")
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "}"))
-		return sb.String()
+		r.IndentLeft()
+		r.NewLine()
+		r.CursorWrite(style.Default, "}")
 	}
 }

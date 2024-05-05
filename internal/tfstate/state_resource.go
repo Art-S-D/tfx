@@ -3,7 +3,6 @@ package tfstate
 import (
 	"fmt"
 	"slices"
-	"strings"
 
 	"github.com/Art-S-D/tfview/internal/json"
 	"github.com/Art-S-D/tfview/internal/render"
@@ -86,30 +85,30 @@ func (m *StateResourceModel) resourceMode() string {
 	return resourceMode
 }
 
-func (m *StateResourceModel) View(params render.ViewParams) string {
-	var sb strings.Builder
+func (m *StateResourceModel) View(r *render.Renderer) {
 
 	// render first line (without the final brace)
-	sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Type, m.resourceMode()))
-	sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, " "))
-	sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Key, m.resource.Type))
-	sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, " "))
-	sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Key, m.resource.Name))
+	r.CursorWrite(style.Type, m.resourceMode())
+	r.CursorWrite(style.Default, " ")
+	r.CursorWrite(style.Key, m.resource.Type)
+	r.CursorWrite(style.Default, " ")
+	r.CursorWrite(style.Key, m.resource.Name)
+
 	if m.resource.Index != nil {
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, " "))
-		sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Key, m.resourceIndex()))
+		r.CursorWrite(style.Default, " ")
+		r.CursorWrite(style.Key, m.resourceIndex())
 	}
 
 	// render braces
 	if !m.expanded {
-		sb.WriteString(" {")
-		sb.WriteString(style.Preview.Render("..."))
-		sb.WriteString("}")
-		return sb.String()
-	} else {
-		sb.WriteString(" {\n")
-		params.Cursor -= 1
+		r.Write(" {")
+		r.Write(style.Preview.Render("..."))
+		r.Write("}")
+		return
 	}
+
+	r.Write(" {")
+	r.IndentRight()
 
 	// render resource body
 	keys := m.Keys()
@@ -117,28 +116,26 @@ func (m *StateResourceModel) View(params render.ViewParams) string {
 	for _, k := range keys {
 		v := m.attributes[k]
 
-		sb.WriteString(style.Indented.Render(style.RenderStyleOrCursor(params.Cursor, style.Key, k)))
+		r.NewLine()
+		r.CursorWrite(style.Key, k)
 
 		for range len(longestKey) - len(k) {
-			sb.WriteRune(' ')
+			r.Write(" ")
 		}
 
-		sb.WriteString(" = ")
+		r.Write(" = ")
 
 		// this makes it so that only the key is selected instead of the key and the value
-		vParams := params
-		if params.Cursor == 0 {
-			vParams.Cursor -= 1
-		}
+		// FIXME
+		// vParams := params
+		// if params.Cursor == 0 {
+		// 	vParams.Cursor -= 1
+		// }
 
-		sb.WriteString(style.Indented.Render(v.View(vParams)))
-		sb.WriteString("\n")
-		params.Cursor -= v.ViewHeight()
+		v.View(r)
 	}
 
-	// render braces
-	sb.WriteString(style.RenderStyleOrCursor(params.Cursor, style.Default, "}"))
-	params.Cursor -= 1
-
-	return sb.String()
+	r.IndentLeft()
+	r.NewLine()
+	r.CursorWrite(style.Default, "}")
 }

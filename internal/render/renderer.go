@@ -4,30 +4,10 @@ import (
 	"strings"
 
 	"github.com/Art-S-D/tfview/internal/style"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const INDENT_WIDTH = 2
-
-type ViewParams struct {
-	Cursor int
-	Width  int
-	// Height int
-	Indentation int
-}
-
-func (v ViewParams) Indent() string {
-	return strings.Repeat(" ", v.Indentation)
-}
-func (v ViewParams) NextIndent() ViewParams {
-	out := v
-	out.Indentation += INDENT_WIDTH
-	return out
-}
-func (v ViewParams) PrevIndent() ViewParams {
-	out := v
-	out.Indentation -= INDENT_WIDTH
-	return out
-}
 
 type Renderer struct {
 	currentLine int
@@ -39,11 +19,26 @@ type Renderer struct {
 
 	currentIndentation int
 
-	builder *strings.Builder
+	builder     *strings.Builder
+	previewLine string
+}
+
+func NewRenderer(cursor, screenStart, screenWidth, screenHeight int, previewLine string) *Renderer {
+	return &Renderer{
+		currentLine:        0,
+		cursor:             cursor,
+		screenStart:        screenStart,
+		screenWidth:        screenWidth,
+		screenHeight:       screenHeight,
+		currentIndentation: 0,
+		builder:            &strings.Builder{},
+		previewLine:        previewLine,
+	}
 }
 
 func (r *Renderer) currentLineIsInView() bool {
-	return r.currentLine >= r.screenStart && r.currentLine > r.screenStart+r.screenHeight
+	// the last -1 is to account fot the preview line
+	return r.currentLine >= r.screenStart && r.currentLine < r.screenStart+r.screenHeight
 }
 func (r *Renderer) Write(s string) {
 	if r.currentLineIsInView() {
@@ -52,11 +47,12 @@ func (r *Renderer) Write(s string) {
 }
 
 // applies the cursor style if the current line is selected
-func (r *Renderer) WriteCursor(s string) {
+// or the s style otherwise
+func (r *Renderer) CursorWrite(s lipgloss.Style, str string) {
 	if r.cursor == r.currentLine {
-		r.Write(style.Cursor.Render(s))
+		r.Write(style.Cursor.Render(str))
 	} else {
-		r.Write(s)
+		r.Write(s.Render(str))
 	}
 }
 
@@ -74,6 +70,8 @@ func (r *Renderer) NewLine() {
 
 }
 func (r *Renderer) String() string {
+	r.builder.WriteRune('\n')
+	r.builder.WriteString(r.previewLine)
 	return r.builder.String()
 }
 
@@ -85,7 +83,7 @@ func (r *Renderer) IndentLeft() {
 }
 
 type Model interface {
-	View(opts ViewParams) string
+	View(opts *Renderer)
 	Selected(cursor int) (selected Model, cursorPosition int)
 	Address() string
 	Expand()

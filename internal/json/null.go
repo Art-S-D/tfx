@@ -21,6 +21,6 @@ func (n *jsonNull) ViewHeight() int {
 func (n *jsonNull) Selected(cursor int) (selected render.Model, cursorPosition int) {
 	return n, 0
 }
-func (s *jsonNull) View(params render.ViewParams) string {
-	return style.RenderStyleOrCursor(params.Cursor, style.Null, "null")
+func (s *jsonNull) View(r *render.Renderer) {
+	r.CursorWrite(style.Null, "null")
 }
