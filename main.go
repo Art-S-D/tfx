@@ -23,7 +23,7 @@ func main() {
 		panic(fmt.Errorf("failed to read json state %w", err))
 	}
 
-	terraformState := stateModel{rootModule: tfstate.RootModuleModelFromJson(*plan.Values.RootModule), screenDrag: 3}
+	terraformState := stateModel{rootModule: tfstate.RootModuleModelFromJson(*plan.Values.RootModule)}
 
 	p := tea.NewProgram(&terraformState)
 	if _, err := p.Run(); err != nil {

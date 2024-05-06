@@ -87,17 +87,16 @@ func (m *StateModuleModel) View(r *render.Renderer) {
 		r.Write(style.Preview.Render("..."))
 		r.Write("}")
 		return
-	} else {
-		r.NewLine()
 	}
 
 	r.IndentRight()
 
 	for _, model := range m.content {
-		model.View(r)
 		r.NewLine()
+		model.View(r)
 	}
 
 	r.IndentLeft()
+	r.NewLine()
 	r.CursorWrite(style.Default, "}")
 }

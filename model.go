@@ -9,12 +9,9 @@ type stateModel struct {
 	screenWidth, screenHeight int
 	cursor                    int
 	screenStart               int // should always be between [0, rootModule.Height() - screenHeight)
-	rootModule                *tfstate.RootModuleModel
-	rootModuleHeight          int
 
-	// make the screen move with the cursor if the cursor is at a distance lower
-	// than `screenDrag` to the top or the bottom of the screen
-	screenDrag int
+	rootModule       *tfstate.RootModuleModel
+	rootModuleHeight int
 }
 
 func (m *stateModel) Init() tea.Cmd {

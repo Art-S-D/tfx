@@ -4,57 +4,59 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m *stateModel) screenBottom() int {
-	// should be -1 but we have -2 instead to account for the preview
-	return m.screenHeight + m.screenStart - 2
+// func (m *stateModel) screenBottom() int {
+// 	// should be -1 but we have -2 instead to account for the preview
+// 	return m.screenHeight + m.screenStart - 2
+// }
+
+func (m *stateModel) maxScreenStart() int {
+	return m.rootModuleHeight - m.screenHeight + 1
 }
 
-func (m *stateModel) clampScreenStart() {
-	if m.screenStart < 0 {
-		m.screenStart = 0
+// moves the screen so that the cursor is in view
+// used when the ui jumps around, ex: when a big element is collapsed
+// basically the cursor does what it wants and the screen follows it
+func (m *stateModel) clampScreen() {
+	minScreen := 0
+	maxScreen := m.maxScreenStart()
+	if m.screenStart > m.cursor {
+		m.screenStart = max(m.cursor, minScreen)
 	}
-	if m.screenStart >= m.rootModuleHeight-m.screenHeight {
-		m.screenStart = m.rootModuleHeight - m.screenHeight
+
+	// +2 because we need one for the preview line and one so that the cursor is one line on top of the bottom of the screen
+	if m.screenStart < m.cursor-m.screenHeight+2 {
+		m.screenStart = min(maxScreen, m.cursor-m.screenHeight+2)
 	}
 }
 
+// moves the cursor so that it does not go out of the state
 func (m *stateModel) clampCursor() {
 	if m.cursor < 0 {
 		m.cursor = 0
 	}
-	screenBottom := m.screenBottom()
-	if m.cursor >= screenBottom {
-		m.cursor = screenBottom
+	if m.cursor > m.rootModuleHeight-1 {
+		m.cursor = m.rootModuleHeight - 1
 	}
 }
 
 func (m *stateModel) cursorUp() {
 	m.cursor -= 1
-	if m.cursor < 0 {
-		m.cursor = 0
-	}
-	if m.cursor <= m.screenStart+m.screenDrag {
-		m.screenStart -= 1
-	}
-	m.clampScreenStart()
 	m.clampCursor()
+	m.clampScreen()
 }
 
 func (m *stateModel) cursorDown() {
 	m.cursor += 1
-	screenBottom := m.screenBottom()
-	if m.cursor >= screenBottom {
-		m.cursor = screenBottom
-	}
-	if m.cursor >= screenBottom-m.screenDrag {
-		m.screenStart += 1
-	}
-	if m.cursor < m.screenStart+m.screenDrag {
-		m.screenStart -= 1
-	}
-	m.clampScreenStart()
 	m.clampCursor()
+	m.clampScreen()
 }
+
+// func (m *stateModel) pageDown() {
+// 	m.screenStart += m.screenHeight
+// 	m.cursor = m.screenStart
+// 	m.clampScreenStart()
+// 	m.clampCursor()
+// }
 
 func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -72,22 +74,22 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected, _ := m.rootModule.Selected(m.cursor)
 			selected.Expand()
 			m.rootModuleHeight = m.rootModule.ViewHeight()
-			m.clampScreenStart()
 			m.clampCursor()
+			m.clampScreen()
 		case "backspace":
 			selected, selectedLine := m.rootModule.Selected(m.cursor)
 			selected.Collapse()
 			m.cursor -= selectedLine
 			m.rootModuleHeight = m.rootModule.ViewHeight()
-			m.clampScreenStart()
 			m.clampCursor()
+			m.clampScreen()
 		}
 	case tea.WindowSizeMsg:
 		m.screenHeight = msg.Height
 		m.screenWidth = msg.Width
 
-		m.clampScreenStart()
 		m.clampCursor()
+		m.clampScreen()
 	}
 	return m, nil
 }
