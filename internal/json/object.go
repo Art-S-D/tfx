@@ -67,7 +67,7 @@ func (o *jsonObject) View(r *render.Renderer) {
 	if !o.expanded {
 		r.CursorWrite(style.Default, "{")
 		r.CursorWrite(style.Preview, "...")
-		r.CursorWrite(style.Preview, "}")
+		r.CursorWrite(style.Default, "}")
 		return
 	} else {
 		r.CursorWrite(style.Default, "{")
