@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Art-S-D/tfview/internal/tfstate"
+	"github.com/Art-S-D/tfx/internal/tfstate"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

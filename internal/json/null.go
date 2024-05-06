@@ -1,8 +1,8 @@
 package json
 
 import (
-	"github.com/Art-S-D/tfview/internal/render"
-	"github.com/Art-S-D/tfview/internal/style"
+	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 )
 
 type jsonNull struct {

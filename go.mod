@@ -1,4 +1,4 @@
-module github.com/Art-S-D/tfview
+module github.com/Art-S-D/tfx
 
 go 1.22.2
 

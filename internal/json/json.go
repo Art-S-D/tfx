@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/Art-S-D/tfview/internal/render"
+	"github.com/Art-S-D/tfx/internal/render"
 )
 
 func ParseValue(jsonValue any, address string) render.Model {

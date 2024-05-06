@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/Art-S-D/tfview/internal/utils"
+	"github.com/Art-S-D/tfx/internal/utils"
 	"github.com/charmbracelet/lipgloss"
 )
 

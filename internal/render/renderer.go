@@ -3,7 +3,7 @@ package render
 import (
 	"strings"
 
-	"github.com/Art-S-D/tfview/internal/style"
+	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/charmbracelet/lipgloss"
 )
 

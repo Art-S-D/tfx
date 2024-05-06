@@ -3,7 +3,7 @@ package tfstate
 import (
 	"fmt"
 
-	"github.com/Art-S-D/tfview/internal/render"
+	"github.com/Art-S-D/tfx/internal/render"
 	tfjson "github.com/hashicorp/terraform-json"
 )
 

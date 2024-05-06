@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/Art-S-D/tfview/internal/json"
-	"github.com/Art-S-D/tfview/internal/render"
-	"github.com/Art-S-D/tfview/internal/style"
-	"github.com/Art-S-D/tfview/internal/utils"
+	"github.com/Art-S-D/tfx/internal/json"
+	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
+	"github.com/Art-S-D/tfx/internal/utils"
 	tfjson "github.com/hashicorp/terraform-json"
 )
 
