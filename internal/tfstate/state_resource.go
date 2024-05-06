@@ -123,6 +123,7 @@ func (m *StateResourceModel) View(r *render.Renderer) {
 			r.Write(" ")
 		}
 
+		r.EndCursorForCurrentLine()
 		r.Write(" = ")
 
 		// this makes it so that only the key is selected instead of the key and the value

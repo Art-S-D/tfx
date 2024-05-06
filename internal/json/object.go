@@ -88,6 +88,7 @@ func (o *jsonObject) View(r *render.Renderer) {
 			// 	vParams.Cursor -= 1
 			// }
 
+			r.EndCursorForCurrentLine()
 			r.Write(": ")
 
 			r.IndentRight()

@@ -20,20 +20,23 @@ type Renderer struct {
 
 	currentIndentation int
 
+	skipCursorForCurrentLine bool
+
 	builder     *strings.Builder
 	previewLine string
 }
 
 func NewRenderer(cursor, screenStart, screenWidth, screenHeight int, previewLine string) *Renderer {
 	return &Renderer{
-		currentLine:        0,
-		cursor:             cursor,
-		screenStart:        screenStart,
-		screenWidth:        screenWidth,
-		screenHeight:       screenHeight,
-		currentIndentation: 0,
-		builder:            &strings.Builder{},
-		previewLine:        previewLine,
+		currentLine:              0,
+		cursor:                   cursor,
+		screenStart:              screenStart,
+		screenWidth:              screenWidth,
+		screenHeight:             screenHeight,
+		currentIndentation:       0,
+		builder:                  &strings.Builder{},
+		previewLine:              previewLine,
+		skipCursorForCurrentLine: false,
 	}
 }
 
@@ -50,7 +53,7 @@ func (r *Renderer) Write(s string) {
 // applies the cursor style if the current line is selected
 // or the s style otherwise
 func (r *Renderer) CursorWrite(s lipgloss.Style, str string) {
-	if r.cursor == r.currentLine {
+	if r.cursor == r.currentLine && !r.skipCursorForCurrentLine {
 		r.Write(style.Cursor.Render(str))
 	} else {
 		r.Write(s.Render(str))
@@ -65,10 +68,17 @@ func (r *Renderer) writeIndent() {
 	}
 }
 func (r *Renderer) NewLine() {
+	r.skipCursorForCurrentLine = false
 	r.currentLine += 1
 	// this line break is after currentLine+=1 so that the line break is not written on the last lien of the screen
 	r.Write("\n")
 	r.writeIndent()
+}
+
+// sets an internal flat that prevents rendering the cursor on the rest of the current line.
+// useful if you want so only show keys and not values as selected
+func (r *Renderer) EndCursorForCurrentLine() {
+	r.skipCursorForCurrentLine = true
 }
 
 func (r *Renderer) String() string {
