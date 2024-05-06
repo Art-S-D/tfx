@@ -39,7 +39,7 @@ func NewRenderer(cursor, screenStart, screenWidth, screenHeight int, previewLine
 
 func (r *Renderer) currentLineIsInView() bool {
 	// the last -1 is to account fot the preview line
-	return r.currentLine >= r.screenStart && r.currentLine < r.screenStart+r.screenHeight
+	return r.currentLine >= r.screenStart && r.currentLine < r.screenStart+r.screenHeight-1
 }
 func (r *Renderer) Write(s string) {
 	if r.currentLineIsInView() {

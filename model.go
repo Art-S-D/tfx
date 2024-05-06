@@ -17,11 +17,6 @@ type stateModel struct {
 	screenDrag int
 }
 
-func (m *stateModel) screenBottom() int {
-	// should be -1 but we have -2 instead to account for the preview
-	return m.screenHeight + m.screenStart - 1
-}
-
 func (m *stateModel) Init() tea.Cmd {
 	m.rootModuleHeight = m.rootModule.ViewHeight()
 

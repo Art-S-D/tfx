@@ -45,7 +45,7 @@ func (m *RootModuleModel) Selected(cursor int) (selected render.Model, cursorPos
 			}
 		}
 
-		panic(fmt.Sprintf("cursor out of bounds %d for %v(root module) of height %d", cursor, m, m.ViewHeight()))
+		panic(fmt.Sprintf("cursor out of bounds %d for root module of height %d", cursor, m.ViewHeight()))
 	}
 }
 
