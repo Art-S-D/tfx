@@ -9,11 +9,12 @@ import (
 
 const INDENT_WIDTH = 2
 
+// a wrapper around strings.Builder that can manage indentation and rendering the cursor
 type Renderer struct {
 	currentLine int
 	cursor      int
 
-	screenStart  int // should always be between [0, rootModule.Height() - screenHeight)
+	screenStart  int
 	screenWidth  int
 	screenHeight int
 
@@ -64,11 +65,12 @@ func (r *Renderer) writeIndent() {
 	}
 }
 func (r *Renderer) NewLine() {
-	r.Write("\n")
 	r.currentLine += 1
+	// this line break is after currentLine+=1 so that the line break is not written on the last lien of the screen
+	r.Write("\n")
 	r.writeIndent()
-
 }
+
 func (r *Renderer) String() string {
 	r.builder.WriteRune('\n')
 	r.builder.WriteString(r.previewLine)
