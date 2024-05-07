@@ -2,6 +2,7 @@ package style
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 
@@ -33,6 +34,20 @@ func init() {
 	Indented = lipgloss.NewStyle().MarginLeft(2)
 	Cursor = lipgloss.NewStyle().Reverse(true)
 	Selection = lipgloss.NewStyle().Background(lipgloss.Color("7")).Foreground(lipgloss.Color("0"))
+	Default = lipgloss.NewStyle()
+
+	if len(os.Getenv("NOCOLOR")) > 0 {
+		Key = lipgloss.NewStyle()
+		String = lipgloss.NewStyle()
+		Boolean = lipgloss.NewStyle()
+		Number = lipgloss.NewStyle()
+		Null = lipgloss.NewStyle()
+		Type = lipgloss.NewStyle()
+		Preview = lipgloss.NewStyle()
+		Indented = lipgloss.NewStyle()
+		Cursor = lipgloss.NewStyle()
+		Selection = lipgloss.NewStyle()
+	}
 }
 
 func Render(json any) string {
