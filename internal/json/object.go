@@ -91,9 +91,7 @@ func (o *jsonObject) View(r *render.Renderer) {
 			r.EndCursorForCurrentLine()
 			r.Write(": ")
 
-			r.IndentRight()
 			v.View(r)
-			r.IndentLeft()
 
 			if i < len(keys)-1 {
 				r.Write(",")
