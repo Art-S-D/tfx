@@ -12,13 +12,15 @@ import (
 )
 
 func main() {
-	os.Remove("debug.log")
-	f, err := tea.LogToFile("debug.log", "debug")
-	if err != nil {
-		fmt.Println("fatal:", err)
-		os.Exit(1)
+	if len(os.Getenv("DEBUG")) > 0 {
+		os.Remove("debug.log")
+		f, err := tea.LogToFile("debug.log", "debug")
+		if err != nil {
+			fmt.Println("fatal:", err)
+			os.Exit(1)
+		}
+		defer f.Close()
 	}
-	defer f.Close()
 
 	args := parseArgs()
 

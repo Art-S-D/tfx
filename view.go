@@ -28,14 +28,14 @@ func (m *stateModel) previewLine() string {
 }
 
 func (m *stateModel) View() string {
+	preview := m.previewLine()
 	renderer := render.NewRenderer(
 		m.cursor,
 		m.screenStart,
 		m.screenWidth,
-		m.screenHeight,
-		m.previewLine(),
+		m.screenHeight-1, // -1 to make space for the preview line
 	)
 	m.rootModule.View(renderer)
 
-	return renderer.String()
+	return fmt.Sprintf("%s\n%s", renderer.String(), preview)
 }
