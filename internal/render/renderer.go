@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Art-S-D/tfx/internal/style"
@@ -27,6 +28,9 @@ type Renderer struct {
 }
 
 func NewRenderer(cursor, screenStart, screenWidth, screenHeight int, previewLine string) *Renderer {
+	var builder strings.Builder
+	// fixes a bug where the bottom half of the screen will not rerender when scrolling up
+	builder.WriteRune('\n')
 	return &Renderer{
 		currentLine:              0,
 		cursor:                   cursor,
@@ -34,7 +38,7 @@ func NewRenderer(cursor, screenStart, screenWidth, screenHeight int, previewLine
 		screenWidth:              screenWidth,
 		screenHeight:             screenHeight,
 		currentIndentation:       0,
-		builder:                  &strings.Builder{},
+		builder:                  &builder,
 		previewLine:              previewLine,
 		skipCursorForCurrentLine: false,
 	}
@@ -44,6 +48,7 @@ func (r *Renderer) currentLineIsInView() bool {
 	// the last -1 is to account fot the preview line
 	return r.currentLine >= r.screenStart && r.currentLine < r.screenStart+r.screenHeight-1
 }
+
 func (r *Renderer) Write(s string) {
 	if r.currentLineIsInView() {
 		r.builder.WriteString(s)
@@ -70,8 +75,10 @@ func (r *Renderer) writeIndent() {
 func (r *Renderer) NewLine() {
 	r.skipCursorForCurrentLine = false
 	r.currentLine += 1
+
 	// this line break is after currentLine+=1 so that the line break is not written on the last lien of the screen
 	r.Write("\n")
+
 	r.writeIndent()
 }
 
@@ -82,9 +89,9 @@ func (r *Renderer) EndCursorForCurrentLine() {
 }
 
 func (r *Renderer) String() string {
-	r.builder.WriteRune('\n')
-	r.builder.WriteString(r.previewLine)
-	return r.builder.String()
+	// do not write the previewLine to r.builder
+	// it will mess up the result if String() is called multiple times
+	return fmt.Sprintf("%s\n%s", r.builder.String(), r.previewLine)
 }
 
 func (r *Renderer) IndentRight() {
@@ -92,13 +99,4 @@ func (r *Renderer) IndentRight() {
 }
 func (r *Renderer) IndentLeft() {
 	r.currentIndentation -= INDENT_WIDTH
-}
-
-type Model interface {
-	View(opts *Renderer)
-	Selected(cursor int) (selected Model, cursorPosition int)
-	Address() string
-	Expand()
-	Collapse()
-	ViewHeight() int
 }
