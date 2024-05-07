@@ -27,6 +27,14 @@ func (o *jsonObject) Expand() {
 func (o *jsonObject) Collapse() {
 	o.expanded = false
 }
+func (b *jsonObject) Children() []render.Model {
+	var out []render.Model
+	keys := b.Keys()
+	for _, k := range keys {
+		out = append(out, b.value[k])
+	}
+	return out
+}
 func (o *jsonObject) ViewHeight() int {
 	if !o.expanded {
 		return 1

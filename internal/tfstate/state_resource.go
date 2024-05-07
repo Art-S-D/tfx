@@ -12,8 +12,7 @@ import (
 )
 
 type StateResourceModel struct {
-	resource *tfjson.StateResource
-	// TODO: replace with json.jsonObject
+	resource   *tfjson.StateResource
 	attributes map[string]render.Model
 	expanded   bool
 }
@@ -83,6 +82,15 @@ func (m *StateResourceModel) resourceMode() string {
 		resourceMode = "data"
 	}
 	return resourceMode
+}
+
+func (m *StateResourceModel) Children() []render.Model {
+	var out []render.Model
+	keys := m.Keys()
+	for _, k := range keys {
+		out = append(out, m.attributes[k])
+	}
+	return out
 }
 
 func (m *StateResourceModel) View(r *render.Renderer) {

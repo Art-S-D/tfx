@@ -34,6 +34,9 @@ func (a *jsonArray) ViewHeight() int {
 	}
 	return out
 }
+func (a *jsonArray) Children() []render.Model {
+	return a.value
+}
 func (a *jsonArray) Selected(cursor int) (selected render.Model, cursorPosition int) {
 	if cursor == 0 {
 		return a, 0

@@ -59,6 +59,10 @@ func (m *RootModuleModel) Collapse() {
 	panic("calling collapse on the root module")
 }
 
+func (m *RootModuleModel) Children() []render.Model {
+	return m.content
+}
+
 func (m *RootModuleModel) View(r *render.Renderer) {
 	for i, model := range m.content {
 		model.View(r)

@@ -7,4 +7,5 @@ type Model interface {
 	Expand()
 	Collapse()
 	ViewHeight() int
+	Children() []Model
 }

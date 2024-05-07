@@ -20,6 +20,9 @@ func (b *jsonBool) Collapse() {}
 func (b *jsonBool) ViewHeight() int {
 	return 1
 }
+func (b *jsonBool) Children() []render.Model {
+	return []render.Model{}
+}
 func (b *jsonBool) Selected(cursor int) (selected render.Model, cursorPosition int) {
 	return b, 0
 }

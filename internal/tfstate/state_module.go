@@ -77,6 +77,10 @@ func (m *StateModuleModel) Collapse() {
 	m.expanded = false
 }
 
+func (m *StateModuleModel) Children() []render.Model {
+	return m.content
+}
+
 func (m *StateModuleModel) View(r *render.Renderer) {
 	r.CursorWrite(style.Type, "module")
 	r.CursorWrite(style.Default, " ")
