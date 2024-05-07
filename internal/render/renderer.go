@@ -1,7 +1,6 @@
 package render
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Art-S-D/tfx/internal/style"
@@ -23,14 +22,14 @@ type Renderer struct {
 
 	skipCursorForCurrentLine bool
 
-	builder     *strings.Builder
-	previewLine string
+	builder *strings.Builder
+	output  []string
 }
 
-func NewRenderer(cursor, screenStart, screenWidth, screenHeight int, previewLine string) *Renderer {
+func NewRenderer(cursor, screenStart, screenWidth, screenHeight int) *Renderer {
 	var builder strings.Builder
 	// fixes a bug where the bottom half of the screen will not rerender when scrolling up
-	builder.WriteRune('\n')
+	// builder.WriteRune('\n')
 	return &Renderer{
 		currentLine:              0,
 		cursor:                   cursor,
@@ -39,14 +38,12 @@ func NewRenderer(cursor, screenStart, screenWidth, screenHeight int, previewLine
 		screenHeight:             screenHeight,
 		currentIndentation:       0,
 		builder:                  &builder,
-		previewLine:              previewLine,
 		skipCursorForCurrentLine: false,
 	}
 }
 
 func (r *Renderer) currentLineIsInView() bool {
-	// the last -1 is to account fot the preview line
-	return r.currentLine >= r.screenStart && r.currentLine < r.screenStart+r.screenHeight-1
+	return r.currentLine >= r.screenStart && r.currentLine < r.screenStart+r.screenHeight
 }
 
 func (r *Renderer) Write(s string) {
@@ -68,18 +65,18 @@ func (r *Renderer) CursorWrite(s lipgloss.Style, str string) {
 func (r *Renderer) writeIndent() {
 	if r.currentLineIsInView() {
 		for range r.currentIndentation {
-			r.Write(" ")
+			r.builder.WriteRune(' ')
 		}
 	}
 }
 func (r *Renderer) NewLine() {
+	if r.currentLineIsInView() {
+		r.output = append(r.output, r.builder.String())
+		r.builder.Reset()
+		r.writeIndent()
+	}
 	r.skipCursorForCurrentLine = false
 	r.currentLine += 1
-
-	// this line break is after currentLine+=1 so that the line break is not written on the last lien of the screen
-	r.Write("\n")
-
-	r.writeIndent()
 }
 
 // sets an internal flat that prevents rendering the cursor on the rest of the current line.
@@ -89,9 +86,14 @@ func (r *Renderer) EndCursorForCurrentLine() {
 }
 
 func (r *Renderer) String() string {
-	// do not write the previewLine to r.builder
-	// it will mess up the result if String() is called multiple times
-	return fmt.Sprintf("%s\n%s", r.builder.String(), r.previewLine)
+	// since components dont end with a new line, we need to insert the last line
+	r.NewLine()
+
+	for r.currentLine < r.screenHeight {
+		r.currentLine += 1
+		r.output = append(r.output, "")
+	}
+	return strings.Join(r.output, "\n")
 }
 
 func (r *Renderer) IndentRight() {
