@@ -23,3 +23,5 @@ go.work
 tfx
 state.json
 debug.log
+**/.terraform
+**/terraform.tfstate
