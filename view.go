@@ -36,5 +36,6 @@ func (m *stateModel) View() string {
 		m.previewLine(),
 	)
 	m.rootModule.View(renderer)
+
 	return renderer.String()
 }

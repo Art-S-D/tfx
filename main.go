@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/Art-S-D/tfx/internal/tfstate"
 	tea "github.com/charmbracelet/bubbletea"
@@ -11,6 +12,14 @@ import (
 )
 
 func main() {
+	os.Remove("debug.log")
+	f, err := tea.LogToFile("debug.log", "debug")
+	if err != nil {
+		fmt.Println("fatal:", err)
+		os.Exit(1)
+	}
+	defer f.Close()
+
 	args := parseArgs()
 
 	jsonState, err := io.ReadAll(args.src)
@@ -23,9 +32,14 @@ func main() {
 		panic(fmt.Errorf("failed to read json state %w", err))
 	}
 
-	terraformState := stateModel{rootModule: tfstate.RootModuleModelFromJson(*plan.Values.RootModule)}
+	terraformState := stateModel{
+		rootModule: tfstate.RootModuleModelFromJson(*plan.Values.RootModule),
+	}
 
-	p := tea.NewProgram(&terraformState)
+	p := tea.NewProgram(
+		&terraformState,
+		tea.WithAltScreen(),
+	)
 	if _, err := p.Run(); err != nil {
 		panic(err.Error())
 	}

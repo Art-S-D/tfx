@@ -17,5 +17,5 @@ type stateModel struct {
 func (m *stateModel) Init() tea.Cmd {
 	m.rootModuleHeight = m.rootModule.ViewHeight()
 
-	return nil
+	return tea.SetWindowTitle("tfx")
 }

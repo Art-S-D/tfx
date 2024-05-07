@@ -9,18 +9,14 @@ import (
 // 	return m.screenHeight + m.screenStart - 2
 // }
 
-func (m *stateModel) maxScreenStart() int {
-	return m.rootModuleHeight - m.screenHeight + 1
-}
-
 // moves the screen so that the cursor is in view
 // used when the ui jumps around, ex: when a big element is collapsed
 // basically the cursor does what it wants and the screen follows it
 func (m *stateModel) clampScreen() {
 	minScreen := 0
-	maxScreen := m.maxScreenStart()
+	maxScreen := m.rootModuleHeight - m.screenHeight + 1
 	if m.screenStart > m.cursor {
-		m.screenStart = max(m.cursor, minScreen)
+		m.screenStart = max(minScreen, m.cursor)
 	}
 
 	// +2 because we need one for the preview line and one so that the cursor is one line on top of the bottom of the screen
@@ -66,10 +62,8 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "up":
 			m.cursorUp()
-			return m, nil
 		case "down":
 			m.cursorDown()
-			return m, nil
 		case "enter":
 			selected, _ := m.rootModule.Selected(m.cursor)
 			selected.Expand()
