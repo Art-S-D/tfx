@@ -63,7 +63,7 @@ func (m *RootModuleModel) Children() []render.Model {
 	return m.content
 }
 
-func (m *RootModuleModel) View(params *render.ViewParams) {
+func (m *RootModuleModel) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 	for i, model := range m.content {
 		builder.WriteString(model.View(params))
@@ -74,4 +74,5 @@ func (m *RootModuleModel) View(params *render.ViewParams) {
 			params.NextLine()
 		}
 	}
+	return builder.String()
 }
