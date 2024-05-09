@@ -84,28 +84,26 @@ func (m *StateModuleModel) Children() []render.Model {
 func (m *StateModuleModel) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 
-	builder.CursorStart()
-	builder.WriteStyle(style.Type, "module")
-	builder.WriteStyle(style.Default, " ")
-	builder.WriteStyle(style.Key, m.module.Address)
-	builder.CursorEnd()
+	builder.WriteStyleOrCursor(style.Type, "module")
+	builder.WriteStyleOrCursor(style.Default, " ")
+	builder.WriteStyleOrCursor(style.Key, m.module.Address)
 
 	builder.WriteString(" {")
 
 	if !m.expanded {
-		builder.WriteStyle(style.Preview, "...")
-		builder.WriteString("}")
+		builder.WriteStyleOrCursor(style.Preview, "...")
+		builder.WriteStyleOrCursor(style.Default, "}")
 		return builder.String()
 	}
 
 	for _, model := range m.content {
 		params.NextLine()
-		builder.NewLine()
+		builder.InsertNewLine()
 		builder.WriteString(model.View(params.IndentedRight()))
 	}
 
 	params.NextLine()
-	builder.NewLine()
-	builder.WriteString("}")
+	builder.InsertNewLine()
+	builder.WriteStyleOrCursor(style.Default, "}")
 	return builder.String()
 }

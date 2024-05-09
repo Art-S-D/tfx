@@ -109,26 +109,23 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 
 	// render first line (without the final brace)
-	builder.CursorStart()
 
-	builder.WriteStyle(style.Type, m.resourceMode())
-	builder.WriteString(" ")
-	builder.WriteStyle(style.Key, m.resource.Type)
-	builder.WriteString(" ")
-	builder.WriteStyle(style.Key, m.resource.Name)
+	builder.WriteStyleOrCursor(style.Type, m.resourceMode())
+	builder.WriteStyleOrCursor(style.Default, " ")
+	builder.WriteStyleOrCursor(style.Key, m.resource.Type)
+	builder.WriteStyleOrCursor(style.Default, " ")
+	builder.WriteStyleOrCursor(style.Key, m.resource.Name)
 
 	if m.resource.Index != nil {
-		builder.WriteString(" ")
-		builder.WriteStyle(style.Key, m.resourceIndex())
+		builder.WriteStyleOrCursor(style.Default, " ")
+		builder.WriteStyleOrCursor(style.Key, m.resourceIndex())
 	}
-
-	builder.CursorEnd()
 
 	// render braces
 	if !m.expanded {
-		builder.WriteString(" {")
-		builder.WriteStyle(style.Preview, "...")
-		builder.WriteString("}")
+		builder.WriteStyleOrCursor(style.Default, " {")
+		builder.WriteStyleOrCursor(style.Preview, "...")
+		builder.WriteStyleOrCursor(style.Default, "}")
 		return builder.String()
 	}
 
@@ -141,10 +138,10 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 		v := m.attributes[k]
 
 		params.NextLine()
-		builder.NewLine()
+		builder.InsertNewLine()
 
-		builder.WriteStyle(style.Key, k)
-		builder.WriteString(strings.Repeat(" ", len(longestKey)-len(k)))
+		builder.WriteStyleOrCursor(style.Key, k)
+		builder.WriteStyleOrCursor(style.Default, strings.Repeat(" ", len(longestKey)-len(k)))
 
 		params.EndCursorForCurrentLine()
 		builder.WriteString(" = ")
@@ -153,7 +150,7 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 	}
 
 	params.NextLine()
-	builder.NewLine()
-	builder.WriteString("}")
+	builder.InsertNewLine()
+	builder.WriteStyleOrCursor(style.Default, "}")
 	return builder.String()
 }

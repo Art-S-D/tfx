@@ -70,7 +70,7 @@ func (m *RootModuleModel) View(params *render.ViewParams) {
 
 		// skip last line for the root module
 		if i < len(m.content)-1 {
-			builder.NewLine()
+			builder.InsertNewLine()
 			params.NextLine()
 		}
 	}
