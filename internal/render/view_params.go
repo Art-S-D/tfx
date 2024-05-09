@@ -31,6 +31,7 @@ func (r *ViewParams) CurrentLineIsInView() bool {
 	return r.CurrentLine >= r.ScreenStart && r.CurrentLine < r.ScreenStart+r.ScreenHeight
 }
 
+// advance the line number
 func (r *ViewParams) NextLine() {
 	r.SkipCursorForCurrentLine = false
 	r.CurrentLine += 1
@@ -44,12 +45,14 @@ func (r *ViewParams) EndCursorForCurrentLine() {
 
 // clones r
 func (r *ViewParams) IndentedRight() *ViewParams {
-	r.Indentation += INDENT_WIDTH
-	return &(*r)
+	out := *r
+	out.Indentation += INDENT_WIDTH
+	return &out
 }
 
 // clones r
 func (r *ViewParams) IndentedLeft() *ViewParams {
-	r.Indentation -= INDENT_WIDTH
-	return &(*r)
+	out := *r
+	out.Indentation -= INDENT_WIDTH
+	return &out
 }
