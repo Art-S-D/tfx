@@ -1,10 +1,11 @@
 package tfstate
 
 import (
+	encodingJson "encoding/json"
 	"fmt"
 	"slices"
 
-	"github.com/Art-S-D/tfx/internal/json"
+	json "github.com/Art-S-D/tfx/internal/json"
 	"github.com/Art-S-D/tfx/internal/render"
 	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/utils"
@@ -21,7 +22,17 @@ func NewStateResourceModel(resource *tfjson.StateResource) *StateResourceModel {
 	out := StateResourceModel{resource, make(map[string]render.Model), false}
 	for k, v := range resource.AttributeValues {
 		addr := fmt.Sprintf("%s.%s", resource.Address, k)
-		out.attributes[k] = json.ParseValue(v, addr)
+
+		var sensitive map[string]any
+		err := encodingJson.Unmarshal(resource.SensitiveValues, &sensitive)
+		if err != nil {
+			panic(fmt.Sprintf("failed to parse sensitive value %v", sensitive))
+		}
+
+		out.attributes[k], err = json.ParseValue(v, sensitive[k], addr)
+		if err != nil {
+			panic(fmt.Errorf("failed to create state resource %w", err))
+		}
 	}
 	return &out
 }

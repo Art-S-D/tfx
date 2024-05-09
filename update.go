@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Art-S-D/tfx/internal/json"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -81,6 +82,14 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected, selectedLine := m.rootModule.Selected(m.cursor)
 			selected.Collapse()
 			m.cursor -= selectedLine
+			m.rootModuleHeight = m.rootModule.ViewHeight()
+			m.clampCursor()
+			m.clampScreen()
+		case "r":
+			selected, _ := m.rootModule.Selected(m.cursor)
+			if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
+				sensitiveValue.Reveal()
+			}
 			m.rootModuleHeight = m.rootModule.ViewHeight()
 			m.clampCursor()
 			m.clampScreen()
