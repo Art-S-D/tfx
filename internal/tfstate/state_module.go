@@ -81,26 +81,31 @@ func (m *StateModuleModel) Children() []render.Model {
 	return m.content
 }
 
-func (m *StateModuleModel) View(r *render.Renderer) {
-	r.CursorWrite(style.Type, "module")
-	r.CursorWrite(style.Default, " ")
-	r.CursorWrite(style.Key, m.module.Address)
-	r.Write(" {")
+func (m *StateModuleModel) View(params *render.ViewParams) string {
+	builder := render.NewBuilder(params)
+
+	builder.CursorStart()
+	builder.WriteStyle(style.Type, "module")
+	builder.WriteStyle(style.Default, " ")
+	builder.WriteStyle(style.Key, m.module.Address)
+	builder.CursorEnd()
+
+	builder.WriteString(" {")
 
 	if !m.expanded {
-		r.Write(style.Preview.Render("..."))
-		r.Write("}")
-		return
+		builder.WriteStyle(style.Preview, "...")
+		builder.WriteString("}")
+		return builder.String()
 	}
-
-	r.IndentRight()
 
 	for _, model := range m.content {
-		r.NewLine()
-		model.View(r)
+		params.NextLine()
+		builder.NewLine()
+		builder.WriteString(model.View(params.IndentedRight()))
 	}
 
-	r.IndentLeft()
-	r.NewLine()
-	r.CursorWrite(style.Default, "}")
+	params.NextLine()
+	builder.NewLine()
+	builder.WriteString("}")
+	return builder.String()
 }

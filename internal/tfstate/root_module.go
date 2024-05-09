@@ -63,13 +63,15 @@ func (m *RootModuleModel) Children() []render.Model {
 	return m.content
 }
 
-func (m *RootModuleModel) View(r *render.Renderer) {
+func (m *RootModuleModel) View(params *render.ViewParams) {
+	builder := render.NewBuilder(params)
 	for i, model := range m.content {
-		model.View(r)
+		builder.WriteString(model.View(params))
 
 		// skip last line for the root module
 		if i < len(m.content)-1 {
-			r.NewLine()
+			builder.NewLine()
+			params.NextLine()
 		}
 	}
 }

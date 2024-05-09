@@ -4,6 +4,7 @@ import (
 	encodingJson "encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 
 	json "github.com/Art-S-D/tfx/internal/json"
 	"github.com/Art-S-D/tfx/internal/render"
@@ -104,30 +105,34 @@ func (m *StateResourceModel) Children() []render.Model {
 	return out
 }
 
-func (m *StateResourceModel) View(r *render.Renderer) {
+func (m *StateResourceModel) View(params *render.ViewParams) string {
+	builder := render.NewBuilder(params)
 
 	// render first line (without the final brace)
-	r.CursorWrite(style.Type, m.resourceMode())
-	r.CursorWrite(style.Default, " ")
-	r.CursorWrite(style.Key, m.resource.Type)
-	r.CursorWrite(style.Default, " ")
-	r.CursorWrite(style.Key, m.resource.Name)
+	builder.CursorStart()
+
+	builder.WriteStyle(style.Type, m.resourceMode())
+	builder.WriteString(" ")
+	builder.WriteStyle(style.Key, m.resource.Type)
+	builder.WriteString(" ")
+	builder.WriteStyle(style.Key, m.resource.Name)
 
 	if m.resource.Index != nil {
-		r.CursorWrite(style.Default, " ")
-		r.CursorWrite(style.Key, m.resourceIndex())
+		builder.WriteString(" ")
+		builder.WriteStyle(style.Key, m.resourceIndex())
 	}
+
+	builder.CursorEnd()
 
 	// render braces
 	if !m.expanded {
-		r.Write(" {")
-		r.Write(style.Preview.Render("..."))
-		r.Write("}")
-		return
+		builder.WriteString(" {")
+		builder.WriteStyle(style.Preview, "...")
+		builder.WriteString("}")
+		return builder.String()
 	}
 
-	r.Write(" {")
-	r.IndentRight()
+	builder.WriteString(" {")
 
 	// render resource body
 	keys := m.Keys()
@@ -135,27 +140,20 @@ func (m *StateResourceModel) View(r *render.Renderer) {
 	for _, k := range keys {
 		v := m.attributes[k]
 
-		r.NewLine()
-		r.CursorWrite(style.Key, k)
+		params.NextLine()
+		builder.NewLine()
 
-		for range len(longestKey) - len(k) {
-			r.Write(" ")
-		}
+		builder.WriteStyle(style.Key, k)
+		builder.WriteString(strings.Repeat(" ", len(longestKey)-len(k)))
 
-		r.EndCursorForCurrentLine()
-		r.Write(" = ")
+		params.EndCursorForCurrentLine()
+		builder.WriteString(" = ")
 
-		// this makes it so that only the key is selected instead of the key and the value
-		// FIXME
-		// vParams := params
-		// if params.Cursor == 0 {
-		// 	vParams.Cursor -= 1
-		// }
-
-		v.View(r)
+		builder.WriteString(v.View(params.IndentedRight()))
 	}
 
-	r.IndentLeft()
-	r.NewLine()
-	r.CursorWrite(style.Default, "}")
+	params.NextLine()
+	builder.NewLine()
+	builder.WriteString("}")
+	return builder.String()
 }
