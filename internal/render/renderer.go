@@ -7,8 +7,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const INDENT_WIDTH = 2
-
 // a wrapper around strings.Builder that can manage indentation and rendering the cursor
 type Renderer struct {
 	currentLine int
