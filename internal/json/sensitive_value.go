@@ -12,6 +12,8 @@ type SensitiveValue struct {
 	shown bool
 }
 
+// this is a separate method from Expand so that 'expand all' doesn't reveal all sensitive values
+// also it's probably better to have it on another key that expand for safety precautions
 func (v *SensitiveValue) Reveal() {
 	v.shown = true
 }

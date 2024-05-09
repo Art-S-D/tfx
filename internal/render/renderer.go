@@ -41,6 +41,12 @@ func NewRenderer(cursor, screenStart, screenWidth, screenHeight int) *Renderer {
 	}
 }
 
+func (r *Renderer) Reset() {
+	r.builder.Reset()
+	r.currentLine = 0
+	r.currentIndentation = 0
+	r.skipCursorForCurrentLine = false
+}
 func (r *Renderer) currentLineIsInView() bool {
 	return r.currentLine >= r.screenStart && r.currentLine < r.screenStart+r.screenHeight
 }
