@@ -24,6 +24,8 @@ func (n *jsonNull) Selected(cursor int) (selected render.Model, cursorPosition i
 func (n *jsonNull) Children() []render.Model {
 	return []render.Model{}
 }
-func (s *jsonNull) View(r *render.Renderer) {
-	r.CursorWrite(style.Null, "null")
+func (s *jsonNull) View(params *render.ViewParams) string {
+	builder := render.NewBuilder(params)
+	builder.WriteStyleOrCursor(style.Null, "null")
+	return builder.String()
 }

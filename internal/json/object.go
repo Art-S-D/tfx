@@ -66,47 +66,42 @@ func (o *jsonObject) Selected(cursor int) (selected render.Model, cursorPosition
 	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, o, o.ViewHeight()))
 }
 
-func (o *jsonObject) View(r *render.Renderer) {
+func (o *jsonObject) View(params *render.ViewParams) string {
+	builder := render.NewBuilder(params)
+
 	if len(o.value) == 0 {
-		r.CursorWrite(style.Default, "{}")
-		return
+		builder.WriteStyleOrCursor(style.Default, "{}")
+		return builder.String()
 	}
 
 	if !o.expanded {
-		r.CursorWrite(style.Default, "{")
-		r.CursorWrite(style.Preview, "...")
-		r.CursorWrite(style.Default, "}")
-		return
+		builder.WriteStyleOrCursor(style.Default, "{")
+		builder.WriteStyleOrCursor(style.Preview, "...")
+		builder.WriteStyleOrCursor(style.Default, "}")
+		return builder.String()
 	} else {
-		r.CursorWrite(style.Default, "{")
-		r.IndentRight()
+		builder.WriteStyleOrCursor(style.Default, "{")
 
 		keys := o.Keys()
 		for i, k := range keys {
 			v := o.value[k]
 
-			r.NewLine()
+			params.NextLine()
+			builder.InsertNewLine()
 			quotedKey := fmt.Sprintf("\"%v\"", k)
-			r.CursorWrite(style.Key, quotedKey)
+			builder.WriteStyleOrCursor(style.Key, quotedKey)
 
-			// this makes it so that only the key is selected instead of the key and the value
-			// FIXME
-			// vParams := params
-			// if params.Cursor == 0 {
-			// 	vParams.Cursor -= 1
-			// }
-
-			r.EndCursorForCurrentLine()
-			r.Write(": ")
-
-			v.View(r)
+			params.EndCursorForCurrentLine()
+			builder.WriteString(": ")
+			builder.WriteString(v.View(params.IndentedRight()))
 
 			if i < len(keys)-1 {
-				r.Write(",")
+				builder.WriteString(",")
 			}
 		}
-		r.IndentLeft()
-		r.NewLine()
-		r.CursorWrite(style.Default, "}")
+		params.NextLine()
+		builder.InsertNewLine()
+		builder.WriteStyleOrCursor(style.Default, "}")
+		return builder.String()
 	}
 }

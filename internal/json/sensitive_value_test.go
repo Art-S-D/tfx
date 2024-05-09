@@ -18,16 +18,13 @@ func TestSensitiveValue(t *testing.T) {
 
 	t.Run("Reveal", func(t *testing.T) {
 		value := SensitiveValue{value: &jsonNull{}}
-		r := render.NewRenderer(0, 0, 10, 10)
+		params := render.ViewParams{ScreenWidth: 100, ScreenHeight: 100}
 
-		value.View(r)
-		reprBeforeReveal := r.String()
-		r.Reset()
+		reprBeforeReveal := value.View(&params)
 
 		value.Reveal()
 
-		value.View(r)
-		reprAfterReveal := r.String()
+		reprAfterReveal := value.View(&params)
 
 		if !strings.Contains(reprBeforeReveal, "(sensitive)") {
 			t.Errorf(

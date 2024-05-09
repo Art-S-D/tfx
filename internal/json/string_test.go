@@ -10,9 +10,8 @@ import (
 func TestString(t *testing.T) {
 	s := jsonString{value: "string", address: "here"}
 	t.Run("View", func(t *testing.T) {
-		r := render.NewRenderer(0, 0, 10, 10)
-		s.View(r)
-		view := r.String()
+		params := render.ViewParams{ScreenWidth: 100, ScreenHeight: 100}
+		view := s.View(&params)
 		if !strings.Contains(view, "\"string\"") {
 			t.Errorf("expected \"string\", got %s", view)
 		}

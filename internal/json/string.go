@@ -27,7 +27,9 @@ func (s *jsonString) Selected(cursor int) (selected render.Model, cursorPosition
 func (s *jsonString) Children() []render.Model {
 	return []render.Model{}
 }
-func (s *jsonString) View(r *render.Renderer) {
+func (s *jsonString) View(params *render.ViewParams) string {
+	builder := render.NewBuilder(params)
 	v := fmt.Sprintf("\"%s\"", s.value)
-	r.CursorWrite(style.String, v)
+	builder.WriteStyleOrCursor(style.String, v)
+	return builder.String()
 }

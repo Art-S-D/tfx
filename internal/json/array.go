@@ -56,29 +56,33 @@ func (a *jsonArray) Selected(cursor int) (selected render.Model, cursorPosition 
 	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, a, a.ViewHeight()))
 }
 
-func (a *jsonArray) View(r *render.Renderer) {
+func (a *jsonArray) View(params *render.ViewParams) string {
+	builder := render.NewBuilder(params)
+
 	if len(a.value) == 0 {
-		r.CursorWrite(style.Default, "[]")
-		return
+		builder.WriteStyleOrCursor(style.Default, "[]")
+		return builder.String()
 	}
 	if !a.expanded {
-		r.CursorWrite(style.Default, "[")
-		r.CursorWrite(style.Preview, "...")
-		r.CursorWrite(style.Default, "]")
-		return
+		builder.WriteStyleOrCursor(style.Default, "[")
+		builder.WriteStyleOrCursor(style.Preview, "...")
+		builder.WriteStyleOrCursor(style.Default, "]")
+		return builder.String()
 	} else {
-		r.CursorWrite(style.Default, "[")
-		r.IndentRight()
+		builder.WriteStyleOrCursor(style.Default, "[")
 
 		for i, v := range a.value {
-			r.NewLine()
-			v.View(r)
+			params.NextLine()
+			builder.InsertNewLine()
+			builder.WriteString(v.View(params.IndentedRight()))
 			if i < len(a.value)-1 {
-				r.Write(",")
+				builder.WriteString(",")
 			}
 		}
-		r.IndentLeft()
-		r.NewLine()
-		r.CursorWrite(style.Default, "]")
+
+		params.NextLine()
+		builder.InsertNewLine()
+		builder.WriteStyleOrCursor(style.Default, "]")
+		return builder.String()
 	}
 }

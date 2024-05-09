@@ -27,7 +27,8 @@ func (b *jsonBool) Selected(cursor int) (selected render.Model, cursorPosition i
 	return b, 0
 }
 
-func (b *jsonBool) View(r *render.Renderer) {
-	v := fmt.Sprintf("%v", b.value)
-	r.CursorWrite(style.Boolean, v)
+func (b *jsonBool) View(params *render.ViewParams) string {
+	builder := render.NewBuilder(params)
+	builder.WriteStyleOrCursor(style.Boolean, fmt.Sprintf("%v", b.value))
+	return builder.String()
 }
