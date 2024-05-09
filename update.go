@@ -49,6 +49,7 @@ func (m *stateModel) cursorDown() {
 
 func (m *stateModel) goToBottom() {
 	m.cursor = m.rootModuleHeight - 1
+	m.clampScreen()
 }
 
 // func (m *stateModel) pageDown() {
@@ -70,7 +71,6 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursorDown()
 		case "g", "G":
 			m.goToBottom()
-			m.clampScreen()
 		case "enter":
 			selected, _ := m.rootModule.Selected(m.cursor)
 			selected.Expand()

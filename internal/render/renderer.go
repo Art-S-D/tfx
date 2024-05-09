@@ -23,7 +23,6 @@ type Renderer struct {
 	skipCursorForCurrentLine bool
 
 	builder *strings.Builder
-	output  []string
 }
 
 func NewRenderer(cursor, screenStart, screenWidth, screenHeight int) *Renderer {
@@ -71,8 +70,12 @@ func (r *Renderer) writeIndent() {
 }
 func (r *Renderer) NewLine() {
 	if r.currentLineIsInView() {
-		r.output = append(r.output, r.builder.String())
-		r.builder.Reset()
+
+		// this if prevents from rendering the last \n which can break the rendering
+		// see https://github.com/charmbracelet/bubbletea/issues/1004
+		if r.currentLine < r.screenStart+r.screenHeight-1 {
+			r.builder.WriteRune('\n')
+		}
 		r.writeIndent()
 	}
 	r.skipCursorForCurrentLine = false
@@ -89,11 +92,11 @@ func (r *Renderer) String() string {
 	// since components dont end with a new line, we need to insert the last line
 	r.NewLine()
 
-	for r.currentLine < r.screenHeight {
+	for r.currentLine < r.screenHeight-1 {
 		r.currentLine += 1
-		r.output = append(r.output, "")
+		r.builder.WriteByte('\n')
 	}
-	return strings.Join(r.output, "\n")
+	return r.builder.String()
 }
 
 func (r *Renderer) IndentRight() {
