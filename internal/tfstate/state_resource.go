@@ -126,13 +126,14 @@ func (m *StateResourceModel) Lines(indent uint8) []*render.ScreenLine {
 		line.AddUnSelectableString(style.Default, " = ")
 
 		nextLines := v.Lines(indent + render.INDENT_WIDTH)
+		nextLines[0].RemoveCursor()
 		line.MergeWith(nextLines[0])
 
 		out = append(out, &line)
 		out = append(out, nextLines[1:]...)
 	}
 
-	lastLine := render.ScreenLine{Indentation: indent, PointsTo: m}
+	lastLine := render.ScreenLine{Indentation: indent, PointsTo: m, PointsToModelEnd: true}
 	lastLine.AddString(style.Default, "}")
 	out = append(out, &lastLine)
 	return out

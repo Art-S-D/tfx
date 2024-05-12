@@ -64,7 +64,7 @@ func (a *jsonArray) Lines(indent uint8) []*render.ScreenLine {
 			out = append(out, nextLines...)
 		}
 
-		lastLine := render.ScreenLine{Indentation: indent, PointsTo: a}
+		lastLine := render.ScreenLine{Indentation: indent, PointsTo: a, PointsToModelEnd: true}
 		lastLine.AddString(style.Default, "]")
 		out = append(out, &lastLine)
 		return out

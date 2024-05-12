@@ -22,9 +22,10 @@ func (c styledString) render(cursor bool) string {
 }
 
 type ScreenLine struct {
-	content     []styledString
-	Indentation uint8
-	PointsTo    Model // used to find the currently selected item
+	content          []styledString
+	Indentation      uint8
+	PointsTo         Model // used to find the currently selected item
+	PointsToModelEnd bool  // true if this the end of the PointsTo Model e.g: lines made of only } or ]
 }
 
 func (s *ScreenLine) AddString(style lipgloss.Style, str string) {
@@ -64,4 +65,10 @@ func (s *ScreenLine) View(onCursor bool) string {
 func (s *ScreenLine) MergeWith(other *ScreenLine) {
 	s.content = append(s.content, other.content...)
 	s.PointsTo = other.PointsTo
+}
+
+func (s *ScreenLine) RemoveCursor() {
+	for i := range s.content {
+		s.content[i].canBeSelected = false
+	}
 }

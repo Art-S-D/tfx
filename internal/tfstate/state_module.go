@@ -74,7 +74,7 @@ func (m *StateModuleModel) Lines(indent uint8) []*render.ScreenLine {
 		out = append(out, model.Lines(indent+render.INDENT_WIDTH)...)
 	}
 
-	lastLine := render.ScreenLine{Indentation: indent, PointsTo: m}
+	lastLine := render.ScreenLine{Indentation: indent, PointsTo: m, PointsToModelEnd: true}
 	lastLine.AddString(style.Default, "}")
 	out = append(out, &lastLine)
 

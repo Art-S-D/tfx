@@ -83,10 +83,14 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.clampScreen()
 		case "backspace":
 			selected := m.selected()
+
+			currentLine := m.screen[m.cursor]
+			if currentLine.PointsToModelEnd {
+				m.cursor = m.cursor - selected.ViewHeight() + 1
+			}
 			selected.Collapse()
 
 			// FIXME
-			// m.cursor -= selectedLine
 			m.screen = m.rootModule.Lines(0)
 
 			m.clampCursor()

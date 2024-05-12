@@ -73,6 +73,7 @@ func (o *jsonObject) Lines(indent uint8) []*render.ScreenLine {
 			line.AddUnSelectableString(style.Default, ": ")
 
 			nextLines := v.Lines(indent + render.INDENT_WIDTH)
+			nextLines[0].RemoveCursor()
 			line.MergeWith(nextLines[0])
 
 			if i < len(keys)-1 {
@@ -83,7 +84,7 @@ func (o *jsonObject) Lines(indent uint8) []*render.ScreenLine {
 			out = append(out, nextLines[1:]...)
 		}
 
-		lastLine := render.ScreenLine{Indentation: indent, PointsTo: o}
+		lastLine := render.ScreenLine{Indentation: indent, PointsTo: o, PointsToModelEnd: true}
 		lastLine.AddString(style.Default, "}")
 		out = append(out, &lastLine)
 		return out
