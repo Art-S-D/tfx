@@ -91,19 +91,22 @@ func (m *StateModuleModel) View(params *render.ViewParams) string {
 	builder.WriteString(" {")
 
 	if !m.expanded {
-		builder.WriteStyleOrCursor(style.Preview, "...")
-		builder.WriteStyleOrCursor(style.Default, "}")
+		builder.WriteString(style.Preview.Render("..."))
+		builder.WriteString("}")
 		return builder.String()
 	}
 
+	params.IndentRight()
 	for _, model := range m.content {
-		params.NextLine()
 		builder.InsertNewLine()
-		builder.WriteString(model.View(params.IndentedRight()))
+		params.NextLine()
+
+		builder.WriteString(model.View(params))
 	}
 
-	params.NextLine()
+	params.IndentLeft()
 	builder.InsertNewLine()
+	params.NextLine()
 	builder.WriteStyleOrCursor(style.Default, "}")
 	return builder.String()
 }

@@ -2,15 +2,12 @@ package json
 
 import (
 	"fmt"
-	"log/slog"
 	"reflect"
 
 	"github.com/Art-S-D/tfx/internal/render"
 )
 
 func ParseValue(jsonValue any, sensitiveValues any, address string) (render.Model, error) {
-	slog.Info("parseValue", "json", jsonValue, "sensitive", sensitiveValues)
-
 	if b, ok := sensitiveValues.(bool); ok && b {
 		result, err := ParseValue(jsonValue, nil, address)
 		return &SensitiveValue{value: result}, err

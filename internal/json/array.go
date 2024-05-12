@@ -70,18 +70,21 @@ func (a *jsonArray) View(params *render.ViewParams) string {
 		return builder.String()
 	} else {
 		builder.WriteStyleOrCursor(style.Default, "[")
+		params.IndentRight()
 
 		for i, v := range a.value {
-			params.NextLine()
 			builder.InsertNewLine()
-			builder.WriteString(v.View(params.IndentedRight()))
+			params.NextLine()
+
+			builder.WriteString(v.View(params))
 			if i < len(a.value)-1 {
 				builder.WriteString(",")
 			}
 		}
 
-		params.NextLine()
+		params.IndentLeft()
 		builder.InsertNewLine()
+		params.NextLine()
 		builder.WriteStyleOrCursor(style.Default, "]")
 		return builder.String()
 	}

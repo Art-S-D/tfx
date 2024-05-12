@@ -81,26 +81,28 @@ func (o *jsonObject) View(params *render.ViewParams) string {
 		return builder.String()
 	} else {
 		builder.WriteStyleOrCursor(style.Default, "{")
+		params.IndentRight()
 
 		keys := o.Keys()
 		for i, k := range keys {
 			v := o.value[k]
 
-			params.NextLine()
 			builder.InsertNewLine()
+			params.NextLine()
 			quotedKey := fmt.Sprintf("\"%v\"", k)
 			builder.WriteStyleOrCursor(style.Key, quotedKey)
 
 			params.EndCursorForCurrentLine()
 			builder.WriteString(": ")
-			builder.WriteString(v.View(params.IndentedRight()))
+			builder.WriteString(v.View(params))
 
 			if i < len(keys)-1 {
 				builder.WriteString(",")
 			}
 		}
-		params.NextLine()
+		params.IndentLeft()
 		builder.InsertNewLine()
+		params.NextLine()
 		builder.WriteStyleOrCursor(style.Default, "}")
 		return builder.String()
 	}

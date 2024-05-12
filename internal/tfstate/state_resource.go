@@ -3,6 +3,7 @@ package tfstate
 import (
 	encodingJson "encoding/json"
 	"fmt"
+	"log/slog"
 	"slices"
 	"strings"
 
@@ -108,6 +109,8 @@ func (m *StateResourceModel) Children() []render.Model {
 func (m *StateResourceModel) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 
+	slog.Info("resource", "params", params)
+
 	// render first line (without the final brace)
 
 	builder.WriteStyleOrCursor(style.Type, m.resourceMode())
@@ -123,13 +126,15 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 
 	// render braces
 	if !m.expanded {
-		builder.WriteStyleOrCursor(style.Default, " {")
-		builder.WriteStyleOrCursor(style.Preview, "...")
-		builder.WriteStyleOrCursor(style.Default, "}")
+		builder.WriteString(" {")
+		builder.WriteString(style.Preview.Render("..."))
+		builder.WriteString("}")
 		return builder.String()
 	}
 
 	builder.WriteString(" {")
+
+	params.IndentRight()
 
 	// render resource body
 	keys := m.Keys()
@@ -137,8 +142,8 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 	for _, k := range keys {
 		v := m.attributes[k]
 
-		params.NextLine()
 		builder.InsertNewLine()
+		params.NextLine()
 
 		builder.WriteStyleOrCursor(style.Key, k)
 		builder.WriteStyleOrCursor(style.Default, strings.Repeat(" ", len(longestKey)-len(k)))
@@ -146,11 +151,12 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 		params.EndCursorForCurrentLine()
 		builder.WriteString(" = ")
 
-		builder.WriteString(v.View(params.IndentedRight()))
+		builder.WriteString(v.View(params))
 	}
 
-	params.NextLine()
+	params.IndentLeft()
 	builder.InsertNewLine()
+	params.NextLine()
 	builder.WriteStyleOrCursor(style.Default, "}")
 	return builder.String()
 }

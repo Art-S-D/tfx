@@ -21,16 +21,15 @@ func NewBuilder(params *ViewParams) *Builder {
 	}
 }
 
-func (r *Builder) Reset() {
-	r.builder.Reset()
+func (r *Builder) WriteString(s string) {
+	if r.params.CurrentLineIsInView() {
+		r.builder.WriteString(s)
+	}
 }
 
-func (r *Builder) WriteString(s string) {
-	r.builder.WriteString(s)
-}
 func (r *Builder) WriteStyleOrCursor(s lipgloss.Style, str string) {
 	if r.params.CurrentLineIsInView() {
-		if r.params.CurrentLine == r.params.Cursor {
+		if !r.params.SkipCursorForCurrentLine && r.params.CurrentLine == r.params.Cursor {
 			r.builder.WriteString(style.Cursor.Render(str))
 		} else {
 			r.builder.WriteString(s.Render(str))
@@ -39,10 +38,8 @@ func (r *Builder) WriteStyleOrCursor(s lipgloss.Style, str string) {
 }
 
 func (r *Builder) writeIndent() {
-	if r.params.CurrentLineIsInView() {
-		for range r.params.Indentation {
-			r.builder.WriteRune(' ')
-		}
+	for range r.params.Indentation {
+		r.builder.WriteRune(' ')
 	}
 }
 
@@ -54,12 +51,12 @@ func (r *Builder) InsertNewLine() {
 		if r.params.CurrentLine < r.params.ScreenStart+r.params.ScreenHeight-1 {
 			r.builder.WriteRune('\n')
 		}
+	}
+	if r.params.NextLineIsInView() {
 		r.writeIndent()
 	}
 }
 
 func (r *Builder) String() string {
-	// since components dont end with a new line, we need to insert the last line
-	r.InsertNewLine()
 	return r.builder.String()
 }

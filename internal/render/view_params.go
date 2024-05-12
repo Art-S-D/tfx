@@ -30,6 +30,9 @@ func NewViewRender(Cursor, ScreenStart, ScreenWidth, ScreenHeight int) *ViewPara
 func (r *ViewParams) CurrentLineIsInView() bool {
 	return r.CurrentLine >= r.ScreenStart && r.CurrentLine < r.ScreenStart+r.ScreenHeight
 }
+func (r *ViewParams) NextLineIsInView() bool {
+	return r.CurrentLine+1 >= r.ScreenStart && r.CurrentLine+1 < r.ScreenStart+r.ScreenHeight
+}
 
 // advance the line number
 func (r *ViewParams) NextLine() {
@@ -44,15 +47,13 @@ func (r *ViewParams) EndCursorForCurrentLine() {
 }
 
 // clones r
-func (r *ViewParams) IndentedRight() *ViewParams {
-	out := *r
-	out.Indentation += INDENT_WIDTH
-	return &out
+func (r *ViewParams) IndentRight() {
+	r.Indentation += INDENT_WIDTH
+	r.ScreenWidth -= INDENT_WIDTH
 }
 
 // clones r
-func (r *ViewParams) IndentedLeft() *ViewParams {
-	out := *r
-	out.Indentation -= INDENT_WIDTH
-	return &out
+func (r *ViewParams) IndentLeft() {
+	r.Indentation -= INDENT_WIDTH
+	r.ScreenWidth += INDENT_WIDTH
 }
