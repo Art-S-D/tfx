@@ -23,12 +23,9 @@ func (b *jsonBool) ViewHeight() int {
 func (b *jsonBool) Children() []render.Model {
 	return []render.Model{}
 }
-func (b *jsonBool) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	return b, 0
-}
 
-func (b *jsonBool) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
-	builder.WriteStyleOrCursor(style.Boolean, fmt.Sprintf("%v", b.value))
-	return builder.String()
+func (b *jsonBool) Lines(indent uint8) []*render.ScreenLine {
+	line := render.ScreenLine{Indentation: indent, PointsTo: b}
+	line.AddString(style.Boolean, fmt.Sprintf("%v", b.value))
+	return []*render.ScreenLine{&line}
 }

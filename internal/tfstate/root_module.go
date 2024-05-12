@@ -1,8 +1,6 @@
 package tfstate
 
 import (
-	"fmt"
-
 	"github.com/Art-S-D/tfx/internal/render"
 	tfjson "github.com/hashicorp/terraform-json"
 )
@@ -32,23 +30,6 @@ func (m *RootModuleModel) ViewHeight() int {
 	return out
 }
 
-func (m *RootModuleModel) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	if cursor < 0 {
-		panic(fmt.Sprintf("negative cursor %d on %v", cursor, m))
-	} else {
-		for _, c := range m.content {
-			height := c.ViewHeight()
-			if cursor < height {
-				return c.Selected(cursor)
-			} else {
-				cursor -= height
-			}
-		}
-
-		panic(fmt.Sprintf("cursor out of bounds %d for root module of height %d", cursor, m.ViewHeight()))
-	}
-}
-
 func (m *RootModuleModel) Address() string {
 	return ""
 }
@@ -63,16 +44,11 @@ func (m *RootModuleModel) Children() []render.Model {
 	return m.content
 }
 
-func (m *RootModuleModel) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
-	for i, model := range m.content {
-		builder.WriteString(model.View(params))
+func (m *RootModuleModel) Lines(indent uint8) []*render.ScreenLine {
+	var out []*render.ScreenLine
 
-		// skip last line for the root module
-		if i < len(m.content)-1 {
-			builder.InsertNewLine()
-			params.NextLine()
-		}
+	for _, model := range m.content {
+		out = append(out, model.Lines(indent)...)
 	}
-	return builder.String()
+	return out
 }

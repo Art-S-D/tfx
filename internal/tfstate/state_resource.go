@@ -3,7 +3,6 @@ package tfstate
 import (
 	encodingJson "encoding/json"
 	"fmt"
-	"log/slog"
 	"slices"
 	"strings"
 
@@ -66,26 +65,6 @@ func (m *StateResourceModel) Collapse() {
 	m.expanded = false
 }
 
-func (m *StateResourceModel) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	if cursor == 0 {
-		return m, 0
-	}
-	cursor -= 1
-	for _, k := range m.Keys() {
-		v := m.attributes[k]
-		height := v.ViewHeight()
-		if cursor < height {
-			return v.Selected(cursor)
-		} else {
-			cursor -= height
-		}
-	}
-	if cursor == 0 {
-		return m, m.ViewHeight() - 1
-	}
-	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, m, m.ViewHeight()))
-}
-
 func (m *StateResourceModel) resourceIndex() string {
 	return resourceIndexToStr(m.resource.Index)
 }
@@ -106,35 +85,32 @@ func (m *StateResourceModel) Children() []render.Model {
 	return out
 }
 
-func (m *StateResourceModel) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
+func (m *StateResourceModel) Lines(indent uint8) []*render.ScreenLine {
+	var out []*render.ScreenLine
 
-	slog.Info("resource", "params", params)
+	firstLine := render.ScreenLine{Indentation: indent, PointsTo: m}
 
-	// render first line (without the final brace)
-
-	builder.WriteStyleOrCursor(style.Type, m.resourceMode())
-	builder.WriteStyleOrCursor(style.Default, " ")
-	builder.WriteStyleOrCursor(style.Key, m.resource.Type)
-	builder.WriteStyleOrCursor(style.Default, " ")
-	builder.WriteStyleOrCursor(style.Key, m.resource.Name)
+	firstLine.AddString(style.Type, m.resourceMode())
+	firstLine.AddString(style.Default, " ")
+	firstLine.AddString(style.Key, m.resource.Type)
+	firstLine.AddString(style.Default, " ")
+	firstLine.AddString(style.Key, m.resource.Name)
 
 	if m.resource.Index != nil {
-		builder.WriteStyleOrCursor(style.Default, " ")
-		builder.WriteStyleOrCursor(style.Key, m.resourceIndex())
+		firstLine.AddString(style.Default, " ")
+		firstLine.AddString(style.Key, m.resourceIndex())
 	}
 
-	// render braces
 	if !m.expanded {
-		builder.WriteString(" {")
-		builder.WriteString(style.Preview.Render("..."))
-		builder.WriteString("}")
-		return builder.String()
+		firstLine.AddUnSelectableString(style.Default, " {")
+		firstLine.AddUnSelectableString(style.Preview, "...")
+		firstLine.AddUnSelectableString(style.Default, "}")
+		out = append(out, &firstLine)
+		return out
 	}
 
-	builder.WriteString(" {")
-
-	params.IndentRight()
+	firstLine.AddUnSelectableString(style.Default, " {")
+	out = append(out, &firstLine)
 
 	// render resource body
 	keys := m.Keys()
@@ -142,21 +118,22 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 	for _, k := range keys {
 		v := m.attributes[k]
 
-		builder.InsertNewLine()
-		params.NextLine()
+		line := render.ScreenLine{Indentation: indent + render.INDENT_WIDTH, PointsTo: v}
 
-		builder.WriteStyleOrCursor(style.Key, k)
-		builder.WriteStyleOrCursor(style.Default, strings.Repeat(" ", len(longestKey)-len(k)))
+		line.AddString(style.Key, k)
+		line.AddString(style.Default, strings.Repeat(" ", len(longestKey)-len(k)))
 
-		params.EndCursorForCurrentLine()
-		builder.WriteString(" = ")
+		line.AddUnSelectableString(style.Default, " = ")
 
-		builder.WriteString(v.View(params))
+		nextLines := v.Lines(indent + render.INDENT_WIDTH)
+		line.MergeWith(nextLines[0])
+
+		out = append(out, &line)
+		out = append(out, nextLines[1:]...)
 	}
 
-	params.IndentLeft()
-	builder.InsertNewLine()
-	params.NextLine()
-	builder.WriteStyleOrCursor(style.Default, "}")
-	return builder.String()
+	lastLine := render.ScreenLine{Indentation: indent, PointsTo: m}
+	lastLine.AddString(style.Default, "}")
+	out = append(out, &lastLine)
+	return out
 }

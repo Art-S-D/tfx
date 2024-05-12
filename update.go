@@ -15,7 +15,7 @@ import (
 // basically the cursor does what it wants and the screen follows it
 func (m *stateModel) clampScreen() {
 	minScreen := 0
-	maxScreen := m.rootModuleHeight - m.screenHeight + 1
+	maxScreen := m.totalHeight() - m.screenHeight + 1
 	if m.screenStart > m.cursor {
 		m.screenStart = max(minScreen, m.cursor)
 	}
@@ -31,8 +31,8 @@ func (m *stateModel) clampCursor() {
 	if m.cursor < 0 {
 		m.cursor = 0
 	}
-	if m.cursor > m.rootModuleHeight-1 {
-		m.cursor = m.rootModuleHeight - 1
+	if m.cursor > m.totalHeight()-1 {
+		m.cursor = m.totalHeight() - 1
 	}
 }
 
@@ -49,7 +49,7 @@ func (m *stateModel) cursorDown() {
 }
 
 func (m *stateModel) goToBottom() {
-	m.cursor = m.rootModuleHeight - 1
+	m.cursor = m.totalHeight() - 1
 	m.clampScreen()
 }
 
@@ -73,24 +73,33 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "g", "G":
 			m.goToBottom()
 		case "enter":
-			selected, _ := m.rootModule.Selected(m.cursor)
+			selected := m.selected()
 			selected.Expand()
-			m.rootModuleHeight = m.rootModule.ViewHeight()
+
+			// FIXME
+			m.screen = m.rootModule.Lines(0)
+
 			m.clampCursor()
 			m.clampScreen()
 		case "backspace":
-			selected, selectedLine := m.rootModule.Selected(m.cursor)
+			selected := m.selected()
 			selected.Collapse()
-			m.cursor -= selectedLine
-			m.rootModuleHeight = m.rootModule.ViewHeight()
+
+			// FIXME
+			// m.cursor -= selectedLine
+			m.screen = m.rootModule.Lines(0)
+
 			m.clampCursor()
 			m.clampScreen()
 		case "r":
-			selected, _ := m.rootModule.Selected(m.cursor)
+			selected := m.selected()
 			if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
 				sensitiveValue.Reveal()
 			}
-			m.rootModuleHeight = m.rootModule.ViewHeight()
+
+			// FIXME
+			m.screen = m.rootModule.Lines(0)
+
 			m.clampCursor()
 			m.clampScreen()
 		}

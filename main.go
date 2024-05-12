@@ -37,6 +37,7 @@ func main() {
 	terraformState := stateModel{
 		rootModule: tfstate.RootModuleModelFromJson(*plan.Values.RootModule),
 	}
+	terraformState.screen = terraformState.rootModule.Lines(0)
 
 	p := tea.NewProgram(
 		&terraformState,

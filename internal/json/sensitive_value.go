@@ -36,24 +36,16 @@ func (v *SensitiveValue) Expand() {
 func (v *SensitiveValue) Collapse() {
 }
 
-func (v *SensitiveValue) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	if cursor == 0 && !v.shown {
-		return v, 0
-	} else {
-		return v.value.Selected(cursor)
-	}
-}
-
 func (v *SensitiveValue) Children() []render.Model {
 	return v.value.Children()
 }
 
-func (v *SensitiveValue) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
-	if !v.shown {
-		builder.WriteStyleOrCursor(style.Preview, "(sensitive)")
-		return builder.String()
+func (v *SensitiveValue) Lines(indent uint8) []*render.ScreenLine {
+	if v.shown {
+		return v.value.Lines(indent)
 	} else {
-		return v.value.View(params)
+		line := render.ScreenLine{Indentation: indent, PointsTo: v}
+		line.AddString(style.Preview, "(sensitive)")
+		return []*render.ScreenLine{&line}
 	}
 }

@@ -18,14 +18,13 @@ func (n *jsonNull) Collapse() {}
 func (n *jsonNull) ViewHeight() int {
 	return 1
 }
-func (n *jsonNull) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	return n, 0
-}
+
 func (n *jsonNull) Children() []render.Model {
 	return []render.Model{}
 }
-func (s *jsonNull) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
-	builder.WriteStyleOrCursor(style.Null, "null")
-	return builder.String()
+
+func (n *jsonNull) Lines(indent uint8) []*render.ScreenLine {
+	line := render.ScreenLine{Indentation: indent, PointsTo: n}
+	line.AddString(style.Null, "null")
+	return []*render.ScreenLine{&line}
 }

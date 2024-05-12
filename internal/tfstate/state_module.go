@@ -1,8 +1,6 @@
 package tfstate
 
 import (
-	"fmt"
-
 	"github.com/Art-S-D/tfx/internal/render"
 	"github.com/Art-S-D/tfx/internal/style"
 	tfjson "github.com/hashicorp/terraform-json"
@@ -40,33 +38,6 @@ func (m *StateModuleModel) ViewHeight() int {
 	return out
 }
 
-func (m *StateModuleModel) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	if cursor < 0 {
-		panic(fmt.Sprintf("negative cursor %d on %v", cursor, m))
-	} else if cursor == 0 {
-		return m, 0
-	} else {
-		// add one line to account for the module name
-		if m.module.Address != "" {
-			cursor -= 1
-		}
-		for _, c := range m.content {
-			height := c.ViewHeight()
-			if cursor < height {
-				return c.Selected(cursor)
-			} else {
-				cursor -= height
-			}
-		}
-
-		// closing bracket of the module is selected
-		if cursor == 0 {
-			return m, m.ViewHeight() - 1
-		}
-		panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, m, m.ViewHeight()))
-	}
-}
-
 func (m *StateModuleModel) Address() string {
 	return m.module.Address
 }
@@ -81,32 +52,31 @@ func (m *StateModuleModel) Children() []render.Model {
 	return m.content
 }
 
-func (m *StateModuleModel) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
+func (m *StateModuleModel) Lines(indent uint8) []*render.ScreenLine {
+	var out []*render.ScreenLine
 
-	builder.WriteStyleOrCursor(style.Type, "module")
-	builder.WriteStyleOrCursor(style.Default, " ")
-	builder.WriteStyleOrCursor(style.Key, m.module.Address)
-
-	builder.WriteString(" {")
+	firstLine := render.ScreenLine{Indentation: indent, PointsTo: m}
+	firstLine.AddString(style.Type, "module")
+	firstLine.AddString(style.Default, " ")
+	firstLine.AddString(style.Key, m.module.Address)
+	firstLine.AddUnSelectableString(style.Default, " {")
 
 	if !m.expanded {
-		builder.WriteString(style.Preview.Render("..."))
-		builder.WriteString("}")
-		return builder.String()
+		firstLine.AddUnSelectableString(style.Preview, "...")
+		firstLine.AddUnSelectableString(style.Default, "}")
+		out = append(out, &firstLine)
+		return out
 	}
 
-	params.IndentRight()
+	out = append(out, &firstLine)
+
 	for _, model := range m.content {
-		builder.InsertNewLine()
-		params.NextLine()
-
-		builder.WriteString(model.View(params))
+		out = append(out, model.Lines(indent+render.INDENT_WIDTH)...)
 	}
 
-	params.IndentLeft()
-	builder.InsertNewLine()
-	params.NextLine()
-	builder.WriteStyleOrCursor(style.Default, "}")
-	return builder.String()
+	lastLine := render.ScreenLine{Indentation: indent, PointsTo: m}
+	lastLine.AddString(style.Default, "}")
+	out = append(out, &lastLine)
+
+	return out
 }

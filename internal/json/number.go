@@ -21,15 +21,13 @@ func (n *jsonNumber) Collapse() {}
 func (n *jsonNumber) ViewHeight() int {
 	return 1
 }
-func (n *jsonNumber) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	return n, 0
-}
+
 func (n *jsonNumber) Children() []render.Model {
 	return []render.Model{}
 }
-func (n *jsonNumber) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
-	v := fmt.Sprintf("%.2f", n.value)
-	builder.WriteStyleOrCursor(style.Number, v)
-	return builder.String()
+
+func (n *jsonNumber) Lines(indent uint8) []*render.ScreenLine {
+	line := render.ScreenLine{Indentation: indent, PointsTo: n}
+	line.AddString(style.Number, fmt.Sprintf("%.2f", n.value))
+	return []*render.ScreenLine{&line}
 }

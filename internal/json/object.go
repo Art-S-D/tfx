@@ -46,64 +46,46 @@ func (o *jsonObject) ViewHeight() int {
 	}
 	return out
 }
-func (o *jsonObject) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	if cursor == 0 {
-		return o, 0
-	}
-	cursor -= 1
-	for _, k := range o.Keys() {
-		v := o.value[k]
-		height := v.ViewHeight()
-		if cursor < height {
-			return v.Selected(cursor)
-		} else {
-			cursor -= height
-		}
-	}
-	if cursor == 0 {
-		return o, o.ViewHeight() - 1
-	}
-	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, o, o.ViewHeight()))
-}
 
-func (o *jsonObject) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
+func (o *jsonObject) Lines(indent uint8) []*render.ScreenLine {
+	firstLine := render.ScreenLine{Indentation: indent, PointsTo: o}
 
 	if len(o.value) == 0 {
-		builder.WriteStyleOrCursor(style.Default, "{}")
-		return builder.String()
-	}
-
-	if !o.expanded {
-		builder.WriteStyleOrCursor(style.Default, "{")
-		builder.WriteStyleOrCursor(style.Preview, "...")
-		builder.WriteStyleOrCursor(style.Default, "}")
-		return builder.String()
+		firstLine.AddString(style.Default, "{}")
+		return []*render.ScreenLine{&firstLine}
+	} else if !o.expanded {
+		firstLine.AddString(style.Default, "{")
+		firstLine.AddString(style.Preview, "...")
+		firstLine.AddString(style.Default, "}")
+		return []*render.ScreenLine{&firstLine}
 	} else {
-		builder.WriteStyleOrCursor(style.Default, "{")
-		params.IndentRight()
+		var out []*render.ScreenLine
+		firstLine.AddString(style.Default, "{")
+		out = append(out, &firstLine)
 
 		keys := o.Keys()
 		for i, k := range keys {
 			v := o.value[k]
 
-			builder.InsertNewLine()
-			params.NextLine()
+			line := render.ScreenLine{Indentation: indent + render.INDENT_WIDTH, PointsTo: v}
 			quotedKey := fmt.Sprintf("\"%v\"", k)
-			builder.WriteStyleOrCursor(style.Key, quotedKey)
+			line.AddString(style.Key, quotedKey)
+			line.AddUnSelectableString(style.Default, ": ")
 
-			params.EndCursorForCurrentLine()
-			builder.WriteString(": ")
-			builder.WriteString(v.View(params))
+			nextLines := v.Lines(indent + render.INDENT_WIDTH)
+			line.MergeWith(nextLines[0])
 
 			if i < len(keys)-1 {
-				builder.WriteString(",")
+				nextLines[len(nextLines)-1].AddUnSelectableString(style.Default, ",")
 			}
+
+			out = append(out, &line)
+			out = append(out, nextLines[1:]...)
 		}
-		params.IndentLeft()
-		builder.InsertNewLine()
-		params.NextLine()
-		builder.WriteStyleOrCursor(style.Default, "}")
-		return builder.String()
+
+		lastLine := render.ScreenLine{Indentation: indent, PointsTo: o}
+		lastLine.AddString(style.Default, "}")
+		out = append(out, &lastLine)
+		return out
 	}
 }

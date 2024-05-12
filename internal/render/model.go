@@ -1,7 +1,7 @@
 package render
 
 type Model interface {
-	View(params *ViewParams) string
+	Lines(indent uint8) []*ScreenLine
 	Address() string
 	Expand()
 	Collapse()

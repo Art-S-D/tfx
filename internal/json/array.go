@@ -1,8 +1,6 @@
 package json
 
 import (
-	"fmt"
-
 	"github.com/Art-S-D/tfx/internal/render"
 	"github.com/Art-S-D/tfx/internal/style"
 )
@@ -37,55 +35,38 @@ func (a *jsonArray) ViewHeight() int {
 func (a *jsonArray) Children() []render.Model {
 	return a.value
 }
-func (a *jsonArray) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	if cursor == 0 {
-		return a, 0
-	}
-	cursor -= 1
-	for _, v := range a.value {
-		height := v.ViewHeight()
-		if cursor < height {
-			return v.Selected(cursor)
-		} else {
-			cursor -= height
-		}
-	}
-	if cursor == 0 {
-		return a, a.ViewHeight() - 1
-	}
-	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, a, a.ViewHeight()))
-}
 
-func (a *jsonArray) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
+func (a *jsonArray) Lines(indent uint8) []*render.ScreenLine {
+
+	firstLine := render.ScreenLine{Indentation: indent, PointsTo: a}
 
 	if len(a.value) == 0 {
-		builder.WriteStyleOrCursor(style.Default, "[]")
-		return builder.String()
+		firstLine.AddString(style.Default, "[]")
+		return []*render.ScreenLine{&firstLine}
 	}
 	if !a.expanded {
-		builder.WriteStyleOrCursor(style.Default, "[")
-		builder.WriteStyleOrCursor(style.Preview, "...")
-		builder.WriteStyleOrCursor(style.Default, "]")
-		return builder.String()
+		firstLine.AddString(style.Default, "[")
+		firstLine.AddString(style.Preview, "...")
+		firstLine.AddString(style.Default, "]")
+		return []*render.ScreenLine{&firstLine}
 	} else {
-		builder.WriteStyleOrCursor(style.Default, "[")
-		params.IndentRight()
+		var out []*render.ScreenLine
+		firstLine.AddString(style.Default, "[")
+		out = append(out, &firstLine)
 
 		for i, v := range a.value {
-			builder.InsertNewLine()
-			params.NextLine()
+			nextLines := v.Lines(indent + render.INDENT_WIDTH)
 
-			builder.WriteString(v.View(params))
 			if i < len(a.value)-1 {
-				builder.WriteString(",")
+				nextLines[len(nextLines)-1].AddUnSelectableString(style.Default, ",")
 			}
+
+			out = append(out, nextLines...)
 		}
 
-		params.IndentLeft()
-		builder.InsertNewLine()
-		params.NextLine()
-		builder.WriteStyleOrCursor(style.Default, "]")
-		return builder.String()
+		lastLine := render.ScreenLine{Indentation: indent, PointsTo: a}
+		lastLine.AddString(style.Default, "]")
+		out = append(out, &lastLine)
+		return out
 	}
 }
