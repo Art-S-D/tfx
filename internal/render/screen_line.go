@@ -28,6 +28,14 @@ type ScreenLine struct {
 	PointsToModelEnd bool  // true if this the end of the PointsTo Model e.g: lines made of only } or ]
 }
 
+func LinesToString(lines []*ScreenLine) string {
+	var sb strings.Builder
+	for _, l := range lines {
+		sb.WriteString(l.View(false))
+	}
+	return sb.String()
+}
+
 func (s *ScreenLine) AddString(style lipgloss.Style, str string) {
 	s.content = append(
 		s.content,
