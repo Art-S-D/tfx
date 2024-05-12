@@ -1,4 +1,6 @@
-A terminal terraform viewer, inspired by [fx](https://github.com/antonmedv/fx)
+[fx](https://github.com/antonmedv/fx) for terraform
+
+![preview](./preview.gif)
 
 # Usage
 
