@@ -26,6 +26,6 @@ func (n *jsonNull) Children() []render.Model {
 }
 func (s *jsonNull) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
-	builder.WriteStyleOrCursor(style.Null, "null")
+	builder.AddString(style.Null, "null")
 	return builder.String()
 }

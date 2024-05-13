@@ -1,6 +1,6 @@
 [fx](https://github.com/antonmedv/fx) for terraform
 
-![preview](./preview.gif)
+![preview](./.github/preview.gif)
 
 # Usage
 

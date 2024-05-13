@@ -30,6 +30,6 @@ func (n *jsonNumber) Children() []render.Model {
 func (n *jsonNumber) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 	v := fmt.Sprintf("%.2f", n.value)
-	builder.WriteStyleOrCursor(style.Number, v)
+	builder.AddString(style.Number, v)
 	return builder.String()
 }

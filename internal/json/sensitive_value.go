@@ -51,7 +51,7 @@ func (v *SensitiveValue) Children() []render.Model {
 func (v *SensitiveValue) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 	if !v.shown {
-		builder.WriteStyleOrCursor(style.Preview, "(sensitive)")
+		builder.AddString(style.Preview, "(sensitive)")
 		return builder.String()
 	} else {
 		return v.value.View(params)

@@ -113,26 +113,26 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 
 	// render first line (without the final brace)
 
-	builder.WriteStyleOrCursor(style.Type, m.resourceMode())
-	builder.WriteStyleOrCursor(style.Default, " ")
-	builder.WriteStyleOrCursor(style.Key, m.resource.Type)
-	builder.WriteStyleOrCursor(style.Default, " ")
-	builder.WriteStyleOrCursor(style.Key, m.resource.Name)
+	builder.AddString(style.Type, m.resourceMode())
+	builder.AddString(style.Default, " ")
+	builder.AddString(style.Key, m.resource.Type)
+	builder.AddString(style.Default, " ")
+	builder.AddString(style.Key, m.resource.Name)
 
 	if m.resource.Index != nil {
-		builder.WriteStyleOrCursor(style.Default, " ")
-		builder.WriteStyleOrCursor(style.Key, m.resourceIndex())
+		builder.AddString(style.Default, " ")
+		builder.AddString(style.Key, m.resourceIndex())
 	}
 
 	// render braces
 	if !m.expanded {
-		builder.WriteString(" {")
-		builder.WriteString(style.Preview.Render("..."))
-		builder.WriteString("}")
+		builder.AddUnselectableString(" {")
+		builder.AddUnselectableString(style.Preview.Render("..."))
+		builder.AddUnselectableString("}")
 		return builder.String()
 	}
 
-	builder.WriteString(" {")
+	builder.AddUnselectableString(" {")
 
 	params.IndentRight()
 
@@ -145,18 +145,18 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 		builder.InsertNewLine()
 		params.NextLine()
 
-		builder.WriteStyleOrCursor(style.Key, k)
-		builder.WriteStyleOrCursor(style.Default, strings.Repeat(" ", len(longestKey)-len(k)))
+		builder.AddString(style.Key, k)
+		builder.AddString(style.Default, strings.Repeat(" ", len(longestKey)-len(k)))
 
 		params.EndCursorForCurrentLine()
-		builder.WriteString(" = ")
+		builder.AddUnselectableString(" = ")
 
-		builder.WriteString(v.View(params))
+		builder.AddUnselectableString(v.View(params))
 	}
 
 	params.IndentLeft()
 	builder.InsertNewLine()
 	params.NextLine()
-	builder.WriteStyleOrCursor(style.Default, "}")
+	builder.AddString(style.Default, "}")
 	return builder.String()
 }

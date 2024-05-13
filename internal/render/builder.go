@@ -21,13 +21,13 @@ func NewBuilder(params *ViewParams) *Builder {
 	}
 }
 
-func (r *Builder) WriteString(s string) {
+func (r *Builder) AddUnselectableString(s string) {
 	if r.params.CurrentLineIsInView() {
 		r.builder.WriteString(s)
 	}
 }
 
-func (r *Builder) WriteStyleOrCursor(s lipgloss.Style, str string) {
+func (r *Builder) AddString(s lipgloss.Style, str string) {
 	if r.params.CurrentLineIsInView() {
 		if !r.params.SkipCursorForCurrentLine && r.params.CurrentLine == r.params.Cursor {
 			r.builder.WriteString(style.Cursor.Render(str))

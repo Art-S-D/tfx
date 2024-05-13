@@ -84,15 +84,15 @@ func (m *StateModuleModel) Children() []render.Model {
 func (m *StateModuleModel) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 
-	builder.WriteStyleOrCursor(style.Type, "module")
-	builder.WriteStyleOrCursor(style.Default, " ")
-	builder.WriteStyleOrCursor(style.Key, m.module.Address)
+	builder.AddString(style.Type, "module")
+	builder.AddString(style.Default, " ")
+	builder.AddString(style.Key, m.module.Address)
 
-	builder.WriteString(" {")
+	builder.AddUnselectableString(" {")
 
 	if !m.expanded {
-		builder.WriteString(style.Preview.Render("..."))
-		builder.WriteString("}")
+		builder.AddUnselectableString(style.Preview.Render("..."))
+		builder.AddUnselectableString("}")
 		return builder.String()
 	}
 
@@ -101,12 +101,12 @@ func (m *StateModuleModel) View(params *render.ViewParams) string {
 		builder.InsertNewLine()
 		params.NextLine()
 
-		builder.WriteString(model.View(params))
+		builder.AddUnselectableString(model.View(params))
 	}
 
 	params.IndentLeft()
 	builder.InsertNewLine()
 	params.NextLine()
-	builder.WriteStyleOrCursor(style.Default, "}")
+	builder.AddString(style.Default, "}")
 	return builder.String()
 }

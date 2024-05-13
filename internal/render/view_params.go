@@ -15,7 +15,7 @@ type ViewParams struct {
 	ScreenHeight int
 }
 
-func NewViewRender(Cursor, ScreenStart, ScreenWidth, ScreenHeight int) *ViewParams {
+func NewViewParams(Cursor, ScreenStart, ScreenWidth, ScreenHeight int) *ViewParams {
 	return &ViewParams{
 		CurrentLine:              0,
 		Cursor:                   Cursor,
@@ -31,7 +31,8 @@ func (r *ViewParams) CurrentLineIsInView() bool {
 	return r.CurrentLine >= r.ScreenStart && r.CurrentLine < r.ScreenStart+r.ScreenHeight
 }
 func (r *ViewParams) NextLineIsInView() bool {
-	return r.CurrentLine+1 >= r.ScreenStart && r.CurrentLine+1 < r.ScreenStart+r.ScreenHeight
+	line := r.CurrentLine + 1
+	return line >= r.ScreenStart && line < r.ScreenStart+r.ScreenHeight
 }
 
 // advance the line number

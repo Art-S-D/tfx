@@ -60,32 +60,32 @@ func (a *jsonArray) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 
 	if len(a.value) == 0 {
-		builder.WriteStyleOrCursor(style.Default, "[]")
+		builder.AddString(style.Default, "[]")
 		return builder.String()
 	}
 	if !a.expanded {
-		builder.WriteStyleOrCursor(style.Default, "[")
-		builder.WriteStyleOrCursor(style.Preview, "...")
-		builder.WriteStyleOrCursor(style.Default, "]")
+		builder.AddString(style.Default, "[")
+		builder.AddString(style.Preview, "...")
+		builder.AddString(style.Default, "]")
 		return builder.String()
 	} else {
-		builder.WriteStyleOrCursor(style.Default, "[")
+		builder.AddString(style.Default, "[")
 		params.IndentRight()
 
 		for i, v := range a.value {
 			builder.InsertNewLine()
 			params.NextLine()
 
-			builder.WriteString(v.View(params))
+			builder.AddUnselectableString(v.View(params))
 			if i < len(a.value)-1 {
-				builder.WriteString(",")
+				builder.AddUnselectableString(",")
 			}
 		}
 
 		params.IndentLeft()
 		builder.InsertNewLine()
 		params.NextLine()
-		builder.WriteStyleOrCursor(style.Default, "]")
+		builder.AddString(style.Default, "]")
 		return builder.String()
 	}
 }

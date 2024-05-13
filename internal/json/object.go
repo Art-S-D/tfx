@@ -70,17 +70,17 @@ func (o *jsonObject) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 
 	if len(o.value) == 0 {
-		builder.WriteStyleOrCursor(style.Default, "{}")
+		builder.AddString(style.Default, "{}")
 		return builder.String()
 	}
 
 	if !o.expanded {
-		builder.WriteStyleOrCursor(style.Default, "{")
-		builder.WriteStyleOrCursor(style.Preview, "...")
-		builder.WriteStyleOrCursor(style.Default, "}")
+		builder.AddString(style.Default, "{")
+		builder.AddString(style.Preview, "...")
+		builder.AddString(style.Default, "}")
 		return builder.String()
 	} else {
-		builder.WriteStyleOrCursor(style.Default, "{")
+		builder.AddString(style.Default, "{")
 		params.IndentRight()
 
 		keys := o.Keys()
@@ -90,20 +90,20 @@ func (o *jsonObject) View(params *render.ViewParams) string {
 			builder.InsertNewLine()
 			params.NextLine()
 			quotedKey := fmt.Sprintf("\"%v\"", k)
-			builder.WriteStyleOrCursor(style.Key, quotedKey)
+			builder.AddString(style.Key, quotedKey)
 
 			params.EndCursorForCurrentLine()
-			builder.WriteString(": ")
-			builder.WriteString(v.View(params))
+			builder.AddUnselectableString(": ")
+			builder.AddUnselectableString(v.View(params))
 
 			if i < len(keys)-1 {
-				builder.WriteString(",")
+				builder.AddUnselectableString(",")
 			}
 		}
 		params.IndentLeft()
 		builder.InsertNewLine()
 		params.NextLine()
-		builder.WriteStyleOrCursor(style.Default, "}")
+		builder.AddString(style.Default, "}")
 		return builder.String()
 	}
 }
