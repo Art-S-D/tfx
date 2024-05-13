@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Art-S-D/tfx/internal/render"
-	"github.com/Art-S-D/tfx/internal/style"
 	tfjson "github.com/hashicorp/terraform-json"
 )
 
@@ -84,15 +83,15 @@ func (m *StateModuleModel) Children() []render.Model {
 func (m *StateModuleModel) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 
-	builder.AddString(style.Type, "module")
-	builder.AddString(style.Default, " ")
-	builder.AddString(style.Key, m.module.Address)
+	builder.AddString(params.Theme.Type("module"))
+	builder.AddString(params.Theme.Default(" "))
+	builder.AddString(params.Theme.Key(m.module.Address))
 
-	builder.AddUnselectableString(" {")
+	builder.AddUnSelectableString(params.Theme.Default(" {"))
 
 	if !m.expanded {
-		builder.AddUnselectableString(style.Preview.Render("..."))
-		builder.AddUnselectableString("}")
+		builder.AddUnSelectableString(params.Theme.Preview("..."))
+		builder.AddUnSelectableString(params.Theme.Default("}"))
 		return builder.String()
 	}
 
@@ -101,12 +100,12 @@ func (m *StateModuleModel) View(params *render.ViewParams) string {
 		builder.InsertNewLine()
 		params.NextLine()
 
-		builder.AddUnselectableString(model.View(params))
+		builder.WriteString(model.View(params))
 	}
 
 	params.IndentLeft()
 	builder.InsertNewLine()
 	params.NextLine()
-	builder.AddString(style.Default, "}")
+	builder.AddString(params.Theme.Default("}"))
 	return builder.String()
 }

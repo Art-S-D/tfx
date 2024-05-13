@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Art-S-D/tfx/internal/render"
-	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -25,7 +24,7 @@ func (m *stateModel) previewLine() string {
 	} else {
 		previewLine = helpText
 	}
-	return style.Selection.Render(previewLine)
+	return m.theme.Selection(previewLine).String()
 }
 
 func (m *stateModel) View() string {
@@ -35,6 +34,7 @@ func (m *stateModel) View() string {
 		Indentation:              0,
 		SkipCursorForCurrentLine: false,
 
+		Theme:        m.theme,
 		Cursor:       m.cursor,
 		ScreenStart:  m.screenStart,
 		ScreenWidth:  m.screenWidth,

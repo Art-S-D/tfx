@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Art-S-D/tfx/internal/render"
-	"github.com/Art-S-D/tfx/internal/style"
 )
 
 type jsonString struct {
@@ -30,6 +29,6 @@ func (s *jsonString) Children() []render.Model {
 func (s *jsonString) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 	v := fmt.Sprintf("\"%s\"", s.value)
-	builder.AddString(style.String, v)
+	builder.AddString(params.Theme.String(v))
 	return builder.String()
 }

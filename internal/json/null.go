@@ -2,7 +2,6 @@ package json
 
 import (
 	"github.com/Art-S-D/tfx/internal/render"
-	"github.com/Art-S-D/tfx/internal/style"
 )
 
 type jsonNull struct {
@@ -26,6 +25,6 @@ func (n *jsonNull) Children() []render.Model {
 }
 func (s *jsonNull) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
-	builder.AddString(style.Null, "null")
+	builder.AddString(params.Theme.Null("null"))
 	return builder.String()
 }

@@ -66,7 +66,7 @@ func (m *RootModuleModel) Children() []render.Model {
 func (m *RootModuleModel) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 	for i, model := range m.content {
-		builder.AddUnselectableString(model.View(params))
+		builder.WriteString(model.View(params))
 
 		// skip last line for the root module
 		if i < len(m.content)-1 {

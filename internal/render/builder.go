@@ -3,7 +3,6 @@ package render
 import (
 	"strings"
 
-	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -21,19 +20,25 @@ func NewBuilder(params *ViewParams) *Builder {
 	}
 }
 
-func (r *Builder) AddUnselectableString(s string) {
+func (r *Builder) AddUnSelectableString(s lipgloss.Style) {
 	if r.params.CurrentLineIsInView() {
-		r.builder.WriteString(s)
+		r.builder.WriteString(s.String())
 	}
 }
 
-func (r *Builder) AddString(s lipgloss.Style, str string) {
+func (r *Builder) AddString(s lipgloss.Style) {
 	if r.params.CurrentLineIsInView() {
 		if !r.params.SkipCursorForCurrentLine && r.params.CurrentLine == r.params.Cursor {
-			r.builder.WriteString(style.Cursor.Render(str))
+			r.builder.WriteString(r.params.Theme.Cursor(s.Value()).String())
 		} else {
-			r.builder.WriteString(s.Render(str))
+			r.builder.WriteString(s.String())
 		}
+	}
+}
+
+func (r *Builder) WriteString(s string) {
+	if r.params.CurrentLineIsInView() {
+		r.builder.WriteString(s)
 	}
 }
 

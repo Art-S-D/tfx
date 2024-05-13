@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/tfstate"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -12,6 +13,8 @@ type stateModel struct {
 
 	rootModule       *tfstate.RootModuleModel
 	rootModuleHeight int
+
+	theme *style.Theme
 }
 
 func (m *stateModel) Init() tea.Cmd {

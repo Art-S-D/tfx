@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Art-S-D/tfx/internal/render"
-	"github.com/Art-S-D/tfx/internal/style"
 )
 
 type jsonArray struct {
@@ -60,32 +59,32 @@ func (a *jsonArray) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 
 	if len(a.value) == 0 {
-		builder.AddString(style.Default, "[]")
+		builder.AddString(params.Theme.Default("[]"))
 		return builder.String()
 	}
 	if !a.expanded {
-		builder.AddString(style.Default, "[")
-		builder.AddString(style.Preview, "...")
-		builder.AddString(style.Default, "]")
+		builder.AddString(params.Theme.Default("["))
+		builder.AddString(params.Theme.Preview("..."))
+		builder.AddString(params.Theme.Default("]"))
 		return builder.String()
 	} else {
-		builder.AddString(style.Default, "[")
+		builder.AddString(params.Theme.Default("["))
 		params.IndentRight()
 
 		for i, v := range a.value {
 			builder.InsertNewLine()
 			params.NextLine()
 
-			builder.AddUnselectableString(v.View(params))
+			builder.WriteString(v.View(params))
 			if i < len(a.value)-1 {
-				builder.AddUnselectableString(",")
+				builder.WriteString(",")
 			}
 		}
 
 		params.IndentLeft()
 		builder.InsertNewLine()
 		params.NextLine()
-		builder.AddString(style.Default, "]")
+		builder.AddString(params.Theme.Default("]"))
 		return builder.String()
 	}
 }

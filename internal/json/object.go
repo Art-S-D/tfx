@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Art-S-D/tfx/internal/render"
-	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/utils"
 )
 
@@ -70,17 +69,17 @@ func (o *jsonObject) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 
 	if len(o.value) == 0 {
-		builder.AddString(style.Default, "{}")
+		builder.AddString(params.Theme.Default("{}"))
 		return builder.String()
 	}
 
 	if !o.expanded {
-		builder.AddString(style.Default, "{")
-		builder.AddString(style.Preview, "...")
-		builder.AddString(style.Default, "}")
+		builder.AddString(params.Theme.Default("{"))
+		builder.AddString(params.Theme.Preview("..."))
+		builder.AddString(params.Theme.Default("}"))
 		return builder.String()
 	} else {
-		builder.AddString(style.Default, "{")
+		builder.AddString(params.Theme.Default("{"))
 		params.IndentRight()
 
 		keys := o.Keys()
@@ -90,20 +89,20 @@ func (o *jsonObject) View(params *render.ViewParams) string {
 			builder.InsertNewLine()
 			params.NextLine()
 			quotedKey := fmt.Sprintf("\"%v\"", k)
-			builder.AddString(style.Key, quotedKey)
+			builder.AddString(params.Theme.Key(quotedKey))
 
 			params.EndCursorForCurrentLine()
-			builder.AddUnselectableString(": ")
-			builder.AddUnselectableString(v.View(params))
+			builder.AddUnSelectableString(params.Theme.Default(": "))
+			builder.WriteString(v.View(params))
 
 			if i < len(keys)-1 {
-				builder.AddUnselectableString(",")
+				builder.WriteString(",")
 			}
 		}
 		params.IndentLeft()
 		builder.InsertNewLine()
 		params.NextLine()
-		builder.AddString(style.Default, "}")
+		builder.AddString(params.Theme.Default("}"))
 		return builder.String()
 	}
 }

@@ -3,13 +3,11 @@ package tfstate
 import (
 	encodingJson "encoding/json"
 	"fmt"
-	"log/slog"
 	"slices"
 	"strings"
 
 	json "github.com/Art-S-D/tfx/internal/json"
 	"github.com/Art-S-D/tfx/internal/render"
-	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/utils"
 	tfjson "github.com/hashicorp/terraform-json"
 )
@@ -109,30 +107,28 @@ func (m *StateResourceModel) Children() []render.Model {
 func (m *StateResourceModel) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
 
-	slog.Info("resource", "params", params)
-
 	// render first line (without the final brace)
 
-	builder.AddString(style.Type, m.resourceMode())
-	builder.AddString(style.Default, " ")
-	builder.AddString(style.Key, m.resource.Type)
-	builder.AddString(style.Default, " ")
-	builder.AddString(style.Key, m.resource.Name)
+	builder.AddString(params.Theme.Type(m.resourceMode()))
+	builder.AddString(params.Theme.Default(" "))
+	builder.AddString(params.Theme.Key(m.resource.Type))
+	builder.AddString(params.Theme.Default(" "))
+	builder.AddString(params.Theme.Key(m.resource.Name))
 
 	if m.resource.Index != nil {
-		builder.AddString(style.Default, " ")
-		builder.AddString(style.Key, m.resourceIndex())
+		builder.AddString(params.Theme.Default(" "))
+		builder.AddString(params.Theme.Key(m.resourceIndex()))
 	}
 
 	// render braces
 	if !m.expanded {
-		builder.AddUnselectableString(" {")
-		builder.AddUnselectableString(style.Preview.Render("..."))
-		builder.AddUnselectableString("}")
+		builder.AddUnSelectableString(params.Theme.Default(" {"))
+		builder.AddUnSelectableString(params.Theme.Preview("..."))
+		builder.AddUnSelectableString(params.Theme.Default("}"))
 		return builder.String()
 	}
 
-	builder.AddUnselectableString(" {")
+	builder.AddUnSelectableString(params.Theme.Default(" {"))
 
 	params.IndentRight()
 
@@ -145,18 +141,21 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 		builder.InsertNewLine()
 		params.NextLine()
 
-		builder.AddString(style.Key, k)
-		builder.AddString(style.Default, strings.Repeat(" ", len(longestKey)-len(k)))
+		builder.AddString(params.Theme.Key(k))
+		spacing := strings.Repeat(" ", len(longestKey)-len(k))
+		builder.AddString(params.Theme.Default(spacing))
 
 		params.EndCursorForCurrentLine()
-		builder.AddUnselectableString(" = ")
+		builder.AddUnSelectableString(params.Theme.Default(" = "))
 
-		builder.AddUnselectableString(v.View(params))
+		builder.WriteString(v.View(params))
 	}
 
 	params.IndentLeft()
+
 	builder.InsertNewLine()
 	params.NextLine()
-	builder.AddString(style.Default, "}")
+
+	builder.AddString(params.Theme.Default("}"))
 	return builder.String()
 }

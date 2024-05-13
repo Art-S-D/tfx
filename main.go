@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/tfstate"
 	tea "github.com/charmbracelet/bubbletea"
 	tfjson "github.com/hashicorp/terraform-json"
@@ -36,6 +37,7 @@ func main() {
 
 	terraformState := stateModel{
 		rootModule: tfstate.RootModuleModelFromJson(*plan.Values.RootModule),
+		theme:      style.Default,
 	}
 
 	p := tea.NewProgram(

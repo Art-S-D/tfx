@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Art-S-D/tfx/internal/render"
-	"github.com/Art-S-D/tfx/internal/style"
 )
 
 type jsonBool struct {
@@ -29,6 +28,6 @@ func (b *jsonBool) Selected(cursor int) (selected render.Model, cursorPosition i
 
 func (b *jsonBool) View(params *render.ViewParams) string {
 	builder := render.NewBuilder(params)
-	builder.AddString(style.Boolean, fmt.Sprintf("%v", b.value))
+	builder.AddString(params.Theme.Boolean(fmt.Sprintf("%v", b.value)))
 	return builder.String()
 }
