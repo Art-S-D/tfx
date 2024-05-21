@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Art-S-D/tfx/internal/json"
+	"github.com/Art-S-D/tfx/internal/render"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -10,12 +11,16 @@ import (
 // 	return m.screenHeight + m.screenStart - 2
 // }
 
+func (m *stateModel) ScreenHeight() int {
+	return len(m.screen)
+}
+
 // moves the screen so that the cursor is in view
 // used when the ui jumps around, ex: when a big element is collapsed
 // basically the cursor does what it wants and the screen follows it
 func (m *stateModel) clampScreen() {
 	minScreen := 0
-	maxScreen := m.rootModuleHeight - m.screenHeight + 1
+	maxScreen := m.ScreenHeight() - m.screenHeight + 1
 	if m.screenStart > m.cursor {
 		m.screenStart = max(minScreen, m.cursor)
 	}
@@ -31,8 +36,8 @@ func (m *stateModel) clampCursor() {
 	if m.cursor < 0 {
 		m.cursor = 0
 	}
-	if m.cursor > m.rootModuleHeight-1 {
-		m.cursor = m.rootModuleHeight - 1
+	if m.cursor > m.ScreenHeight()-1 {
+		m.cursor = m.ScreenHeight() - 1
 	}
 }
 
@@ -49,7 +54,7 @@ func (m *stateModel) cursorDown() {
 }
 
 func (m *stateModel) goToBottom() {
-	m.cursor = m.rootModuleHeight - 1
+	m.cursor = m.ScreenHeight() - 1
 	m.clampScreen()
 }
 
@@ -73,26 +78,32 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "g", "G":
 			m.goToBottom()
 		case "enter":
-			selected, _ := m.rootModule.Selected(m.cursor)
-			selected.Expand()
-			m.rootModuleHeight = m.rootModule.ViewHeight()
-			m.clampCursor()
-			m.clampScreen()
+			selected := m.Selected()
+			if collapser, ok := selected.(render.Collapser); ok {
+				collapser.Expand()
+				m.clampCursor()
+				m.clampScreen()
+			}
+			m.RefreshScreen()
 		case "backspace":
-			selected, selectedLine := m.rootModule.Selected(m.cursor)
-			selected.Collapse()
-			m.cursor -= selectedLine
-			m.rootModuleHeight = m.rootModule.ViewHeight()
-			m.clampCursor()
-			m.clampScreen()
+			selected := m.Selected()
+			if collapser, ok := selected.(render.Collapser); ok {
+				collapser.Collapse()
+				if m.screen[m.cursor].PointsToEnd {
+					m.cursor -= len(selected.View(m.ViewParams()))
+				}
+				m.clampCursor()
+				m.clampScreen()
+				m.RefreshScreen()
+			}
 		case "r":
-			selected, _ := m.rootModule.Selected(m.cursor)
+			selected := m.Selected()
 			if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
 				sensitiveValue.Reveal()
 			}
-			m.rootModuleHeight = m.rootModule.ViewHeight()
 			m.clampCursor()
 			m.clampScreen()
+			m.RefreshScreen()
 		}
 	case tea.WindowSizeMsg:
 		m.screenHeight = msg.Height

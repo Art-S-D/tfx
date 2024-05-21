@@ -1,6 +1,8 @@
 package style
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -17,35 +19,35 @@ type Theme struct {
 	selection    lipgloss.Style
 }
 
-func (t *Theme) Default(s string) lipgloss.Style {
-	return t.defaultStyle.SetString(s)
+func (t *Theme) Default(s ...string) lipgloss.Style {
+	return t.defaultStyle.SetString(strings.Join(s, ""))
 }
-func (t *Theme) Type(s string) lipgloss.Style {
-	return t.typeStyle.SetString(s)
+func (t *Theme) Type(s ...string) lipgloss.Style {
+	return t.typeStyle.SetString(strings.Join(s, ""))
 }
-func (t *Theme) Key(s string) lipgloss.Style {
-	return t.key.SetString(s)
+func (t *Theme) Key(s ...string) lipgloss.Style {
+	return t.key.SetString(strings.Join(s, ""))
 }
-func (t *Theme) String(s string) lipgloss.Style {
-	return t.stringStyle.SetString(s)
+func (t *Theme) String(s ...string) lipgloss.Style {
+	return t.stringStyle.SetString(strings.Join(s, ""))
 }
-func (t *Theme) Boolean(s string) lipgloss.Style {
-	return t.boolean.SetString(s)
+func (t *Theme) Boolean(s ...string) lipgloss.Style {
+	return t.boolean.SetString(strings.Join(s, ""))
 }
-func (t *Theme) Number(s string) lipgloss.Style {
-	return t.number.SetString(s)
+func (t *Theme) Number(s ...string) lipgloss.Style {
+	return t.number.SetString(strings.Join(s, ""))
 }
-func (t *Theme) Null(s string) lipgloss.Style {
-	return t.null.SetString(s)
+func (t *Theme) Null(s ...string) lipgloss.Style {
+	return t.null.SetString(strings.Join(s, ""))
 }
-func (t *Theme) Preview(s string) lipgloss.Style {
-	return t.preview.SetString(s)
+func (t *Theme) Preview(s ...string) lipgloss.Style {
+	return t.preview.SetString(strings.Join(s, ""))
 }
-func (t *Theme) Cursor(s string) lipgloss.Style {
-	return t.cursor.SetString(s)
+func (t *Theme) Cursor(s ...string) lipgloss.Style {
+	return t.cursor.SetString(strings.Join(s, ""))
 }
-func (t *Theme) Selection(s string) lipgloss.Style {
-	return t.selection.SetString(s)
+func (t *Theme) Selection(s ...string) lipgloss.Style {
+	return t.selection.SetString(strings.Join(s, ""))
 }
 
 var Default *Theme

@@ -7,28 +7,13 @@ import (
 )
 
 type jsonNumber struct {
-	value   float64
-	address string
+	render.BaseModel
+	value float64
 }
 
-func (n *jsonNumber) Address() string {
-	return n.address
-}
-
-func (n *jsonNumber) Expand()   {}
-func (n *jsonNumber) Collapse() {}
-func (n *jsonNumber) ViewHeight() int {
-	return 1
-}
-func (n *jsonNumber) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	return n, 0
-}
-func (n *jsonNumber) Children() []render.Model {
-	return []render.Model{}
-}
-func (n *jsonNumber) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
+func (n *jsonNumber) View(params render.ViewParams) []render.Line {
+	line := render.Line{Theme: params.Theme, PointsTo: n}
 	v := fmt.Sprintf("%.2f", n.value)
-	builder.AddString(params.Theme.Number(v))
-	return builder.String()
+	line.AddSelectable(params.Theme.Number(v))
+	return []render.Line{line}
 }

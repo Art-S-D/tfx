@@ -1,8 +1,6 @@
 package tfstate
 
 import (
-	"fmt"
-
 	"github.com/Art-S-D/tfx/internal/render"
 	tfjson "github.com/hashicorp/terraform-json"
 )
@@ -24,55 +22,14 @@ func RootModuleModelFromJson(json tfjson.StateModule) *RootModuleModel {
 	return &result
 }
 
-func (m *RootModuleModel) ViewHeight() int {
-	out := 0
-	for _, c := range m.content {
-		out += c.ViewHeight()
+func (m *RootModuleModel) Address() string          { return "" }
+func (m *RootModuleModel) Children() []render.Model { return m.content }
+
+func (m *RootModuleModel) View(params render.ViewParams) []render.Line {
+	var out []render.Line
+	for _, model := range m.content {
+		childLines := model.View(params)
+		out = append(out, childLines...)
 	}
 	return out
-}
-
-func (m *RootModuleModel) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	if cursor < 0 {
-		panic(fmt.Sprintf("negative cursor %d on %v", cursor, m))
-	} else {
-		for _, c := range m.content {
-			height := c.ViewHeight()
-			if cursor < height {
-				return c.Selected(cursor)
-			} else {
-				cursor -= height
-			}
-		}
-
-		panic(fmt.Sprintf("cursor out of bounds %d for root module of height %d", cursor, m.ViewHeight()))
-	}
-}
-
-func (m *RootModuleModel) Address() string {
-	return ""
-}
-func (m *RootModuleModel) Expand() {
-	panic("callint expand on the root module")
-}
-func (m *RootModuleModel) Collapse() {
-	panic("calling collapse on the root module")
-}
-
-func (m *RootModuleModel) Children() []render.Model {
-	return m.content
-}
-
-func (m *RootModuleModel) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
-	for i, model := range m.content {
-		builder.WriteString(model.View(params))
-
-		// skip last line for the root module
-		if i < len(m.content)-1 {
-			builder.InsertNewLine()
-			params.NextLine()
-		}
-	}
-	return builder.String()
 }

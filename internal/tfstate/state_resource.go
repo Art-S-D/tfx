@@ -13,13 +13,13 @@ import (
 )
 
 type StateResourceModel struct {
+	render.BaseCollapser
 	resource   *tfjson.StateResource
 	attributes map[string]render.Model
-	expanded   bool
 }
 
 func NewStateResourceModel(resource *tfjson.StateResource) *StateResourceModel {
-	out := StateResourceModel{resource, make(map[string]render.Model), false}
+	out := StateResourceModel{resource: resource, attributes: make(map[string]render.Model)}
 	for k, v := range resource.AttributeValues {
 		addr := fmt.Sprintf("%s.%s", resource.Address, k)
 
@@ -41,47 +41,8 @@ func (m *StateResourceModel) Keys() []string {
 	return utils.KeysOrdered(m.attributes)
 }
 
-func (m *StateResourceModel) ViewHeight() int {
-	if !m.expanded {
-		return 1
-	} else {
-		// one for each curly brackets
-		out := 2
-		for _, v := range m.attributes {
-			out += v.ViewHeight()
-		}
-		return out
-	}
-}
-
 func (m *StateResourceModel) Address() string {
 	return m.resource.Address
-}
-func (m *StateResourceModel) Expand() {
-	m.expanded = true
-}
-func (m *StateResourceModel) Collapse() {
-	m.expanded = false
-}
-
-func (m *StateResourceModel) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	if cursor == 0 {
-		return m, 0
-	}
-	cursor -= 1
-	for _, k := range m.Keys() {
-		v := m.attributes[k]
-		height := v.ViewHeight()
-		if cursor < height {
-			return v.Selected(cursor)
-		} else {
-			cursor -= height
-		}
-	}
-	if cursor == 0 {
-		return m, m.ViewHeight() - 1
-	}
-	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, m, m.ViewHeight()))
 }
 
 func (m *StateResourceModel) resourceIndex() string {
@@ -104,33 +65,35 @@ func (m *StateResourceModel) Children() []render.Model {
 	return out
 }
 
-func (m *StateResourceModel) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
-
-	// render first line (without the final brace)
-
-	builder.AddString(params.Theme.Type(m.resourceMode()))
-	builder.AddString(params.Theme.Default(" "))
-	builder.AddString(params.Theme.Key(m.resource.Type))
-	builder.AddString(params.Theme.Default(" "))
-	builder.AddString(params.Theme.Key(m.resource.Name))
+func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
+	firstLine := render.Line{Theme: params.Theme, PointsTo: m}
+	firstLine.AddSelectable(
+		params.Theme.Type(m.resourceMode()),
+		params.Theme.Default(" "),
+		params.Theme.Key(m.resource.Type),
+		params.Theme.Default(" "),
+		params.Theme.Key(m.resource.Name),
+	)
 
 	if m.resource.Index != nil {
-		builder.AddString(params.Theme.Default(" "))
-		builder.AddString(params.Theme.Key(m.resourceIndex()))
+		firstLine.AddSelectable(
+			params.Theme.Default(" "),
+			params.Theme.Key(m.resourceIndex()),
+		)
 	}
 
-	// render braces
-	if !m.expanded {
-		builder.AddUnSelectableString(params.Theme.Default(" {"))
-		builder.AddUnSelectableString(params.Theme.Preview("..."))
-		builder.AddUnSelectableString(params.Theme.Default("}"))
-		return builder.String()
+	firstLine.AddUnselectable(params.Theme.Default("{"))
+
+	if !m.Expanded {
+		firstLine.AddUnselectable(
+			params.Theme.Preview("..."),
+			params.Theme.Default("}"),
+		)
+		return []render.Line{firstLine}
 	}
 
-	builder.AddUnSelectableString(params.Theme.Default(" {"))
-
-	params.IndentRight()
+	var out []render.Line
+	out = append(out, firstLine)
 
 	// render resource body
 	keys := m.Keys()
@@ -138,24 +101,22 @@ func (m *StateResourceModel) View(params *render.ViewParams) string {
 	for _, k := range keys {
 		v := m.attributes[k]
 
-		builder.InsertNewLine()
-		params.NextLine()
+		line := render.Line{Theme: params.Theme, PointsTo: v}
+		line.AddSelectable(params.Theme.Key(k))
 
-		builder.AddString(params.Theme.Key(k))
 		spacing := strings.Repeat(" ", len(longestKey)-len(k))
-		builder.AddString(params.Theme.Default(spacing))
+		line.AddUnselectable(
+			params.Theme.Default(spacing),
+			params.Theme.Default(" = "),
+		)
+		out = append(out, line)
 
-		params.EndCursorForCurrentLine()
-		builder.AddUnSelectableString(params.Theme.Default(" = "))
-
-		builder.WriteString(v.View(params))
+		lines := v.View(params.IndentedRight())
+		out = append(out, lines...)
 	}
 
-	params.IndentLeft()
-
-	builder.InsertNewLine()
-	params.NextLine()
-
-	builder.AddString(params.Theme.Default("}"))
-	return builder.String()
+	lastLine := render.Line{Theme: params.Theme, PointsTo: m, PointsToEnd: true}
+	lastLine.AddSelectable(params.Theme.Default("}"))
+	out = append(out, lastLine)
+	return out
 }

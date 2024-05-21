@@ -7,24 +7,23 @@ import (
 	"github.com/Art-S-D/tfx/internal/render"
 )
 
-func TestSensitiveValue(t *testing.T) {
-	t.Run("Expand", func(t *testing.T) {
-		value := SensitiveValue{value: &jsonNull{}}
-		value.Expand()
-		if value.shown {
-			t.Errorf("sensitive value should not expand")
-		}
-	})
+func linesToString(lines []render.Line) string {
+	var out strings.Builder
+	for _, l := range lines {
+		out.WriteString(l.String())
+		out.WriteRune('\n')
+	}
+	return out.String()
+}
 
+func TestSensitiveValue(t *testing.T) {
 	t.Run("Reveal", func(t *testing.T) {
 		value := SensitiveValue{value: &jsonNull{}}
-		params := &render.ViewParams{ScreenWidth: 100, ScreenHeight: 100}
+		params := render.ViewParams{ScreenWidth: 100, ScreenHeight: 100}
 
-		reprBeforeReveal := value.View(params)
-
+		reprBeforeReveal := linesToString(value.View(params))
 		value.Reveal()
-
-		reprAfterReveal := value.View(params)
+		reprAfterReveal := linesToString(value.View(params))
 
 		if !strings.Contains(reprBeforeReveal, "(sensitive)") {
 			t.Errorf(

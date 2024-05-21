@@ -17,41 +17,23 @@ func (v *SensitiveValue) Reveal() {
 	v.shown = true
 }
 
-func (v *SensitiveValue) ViewHeight() int {
-	if !v.shown {
-		return 1
-	} else {
-		return v.value.ViewHeight()
-	}
-}
-
 func (v *SensitiveValue) Address() string {
 	return v.value.Address()
 }
 
-// cannot be expanded or collapsed, only revealed
-func (v *SensitiveValue) Expand() {
-}
-func (v *SensitiveValue) Collapse() {
-}
-
-func (v *SensitiveValue) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	if cursor == 0 && !v.shown {
-		return v, 0
+func (v *SensitiveValue) Children() []render.Model {
+	if childrener, ok := v.value.(render.Childrener); ok {
+		return childrener.Children()
 	} else {
-		return v.value.Selected(cursor)
+		return []render.Model{}
 	}
 }
 
-func (v *SensitiveValue) Children() []render.Model {
-	return v.value.Children()
-}
-
-func (v *SensitiveValue) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
+func (v *SensitiveValue) View(params render.ViewParams) []render.Line {
 	if !v.shown {
-		builder.AddString(params.Theme.Preview("(sensitive)"))
-		return builder.String()
+		line := render.Line{Theme: params.Theme, PointsTo: v}
+		line.AddSelectable(params.Theme.Preview("(sensitive)"))
+		return []render.Line{line}
 	} else {
 		return v.value.View(params)
 	}

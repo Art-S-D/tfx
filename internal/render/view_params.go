@@ -19,8 +19,8 @@ type ViewParams struct {
 	ScreenHeight int
 }
 
-func NewViewParams(Cursor, ScreenStart, ScreenWidth, ScreenHeight int) *ViewParams {
-	return &ViewParams{
+func NewViewParams(Cursor, ScreenStart, ScreenWidth, ScreenHeight int) ViewParams {
+	return ViewParams{
 		CurrentLine:              0,
 		Cursor:                   Cursor,
 		ScreenStart:              ScreenStart,
@@ -31,34 +31,38 @@ func NewViewParams(Cursor, ScreenStart, ScreenWidth, ScreenHeight int) *ViewPara
 	}
 }
 
-func (r *ViewParams) CurrentLineIsInView() bool {
+func (r ViewParams) CurrentLineIsInView() bool {
 	return r.CurrentLine >= r.ScreenStart && r.CurrentLine < r.ScreenStart+r.ScreenHeight
 }
-func (r *ViewParams) NextLineIsInView() bool {
+func (r ViewParams) NextLineIsInView() bool {
 	line := r.CurrentLine + 1
 	return line >= r.ScreenStart && line < r.ScreenStart+r.ScreenHeight
 }
 
 // advance the line number
-func (r *ViewParams) NextLine() {
+func (r ViewParams) NextLine() ViewParams {
 	r.SkipCursorForCurrentLine = false
 	r.CurrentLine += 1
+	return r
 }
 
 // sets an internal flat that prevents rendering the Cursor on the rest of the current line.
 // useful if you want so only show keys and not values as selected
-func (r *ViewParams) EndCursorForCurrentLine() {
+func (r ViewParams) EndCursorForCurrentLine() ViewParams {
 	r.SkipCursorForCurrentLine = true
+	return r
 }
 
 // clones r
-func (r *ViewParams) IndentRight() {
+func (r ViewParams) IndentedRight() ViewParams {
 	r.Indentation += INDENT_WIDTH
 	r.ScreenWidth -= INDENT_WIDTH
+	return r
 }
 
 // clones r
-func (r *ViewParams) IndentLeft() {
+func (r ViewParams) IndentedLeft() ViewParams {
 	r.Indentation -= INDENT_WIDTH
 	r.ScreenWidth += INDENT_WIDTH
+	return r
 }

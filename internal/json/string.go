@@ -7,28 +7,13 @@ import (
 )
 
 type jsonString struct {
-	value   string
-	address string
+	render.BaseModel
+	value string
 }
 
-func (s *jsonString) Address() string {
-	return s.address
-}
-
-func (s *jsonString) Expand()   {}
-func (s *jsonString) Collapse() {}
-func (s *jsonString) ViewHeight() int {
-	return 1
-}
-func (s *jsonString) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	return s, 0
-}
-func (s *jsonString) Children() []render.Model {
-	return []render.Model{}
-}
-func (s *jsonString) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
+func (s *jsonString) View(params render.ViewParams) []render.Line {
+	line := render.Line{Theme: params.Theme, PointsTo: s}
 	v := fmt.Sprintf("\"%s\"", s.value)
-	builder.AddString(params.Theme.String(v))
-	return builder.String()
+	line.AddSelectable(params.Theme.String(v))
+	return []render.Line{line}
 }

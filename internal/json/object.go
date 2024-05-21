@@ -8,24 +8,15 @@ import (
 )
 
 type jsonObject struct {
-	value    map[string]render.Model
-	address  string
-	expanded bool
+	render.BaseModel
+	render.BaseCollapser
+	value map[string]render.Model
 }
 
 func (o *jsonObject) Keys() []string {
 	return utils.KeysOrdered(o.value)
 }
 
-func (o *jsonObject) Address() string {
-	return o.address
-}
-func (o *jsonObject) Expand() {
-	o.expanded = true
-}
-func (o *jsonObject) Collapse() {
-	o.expanded = false
-}
 func (b *jsonObject) Children() []render.Model {
 	var out []render.Model
 	keys := b.Keys()
@@ -34,75 +25,39 @@ func (b *jsonObject) Children() []render.Model {
 	}
 	return out
 }
-func (o *jsonObject) ViewHeight() int {
-	if !o.expanded {
-		return 1
-	}
-	// one for each curly brackets
-	out := 2
-	for _, v := range o.value {
-		out += v.ViewHeight()
-	}
-	return out
-}
-func (o *jsonObject) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	if cursor == 0 {
-		return o, 0
-	}
-	cursor -= 1
-	for _, k := range o.Keys() {
-		v := o.value[k]
-		height := v.ViewHeight()
-		if cursor < height {
-			return v.Selected(cursor)
-		} else {
-			cursor -= height
-		}
-	}
-	if cursor == 0 {
-		return o, o.ViewHeight() - 1
-	}
-	panic(fmt.Sprintf("cursor out of bounds %d for %v of height %d", cursor, o, o.ViewHeight()))
-}
 
-func (o *jsonObject) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
+func (o *jsonObject) View(params render.ViewParams) []render.Line {
+	firstLine := render.Line{Theme: params.Theme, PointsTo: o}
 
 	if len(o.value) == 0 {
-		builder.AddString(params.Theme.Default("{}"))
-		return builder.String()
-	}
-
-	if !o.expanded {
-		builder.AddString(params.Theme.Default("{"))
-		builder.AddString(params.Theme.Preview("..."))
-		builder.AddString(params.Theme.Default("}"))
-		return builder.String()
+		firstLine.AddSelectable(params.Theme.Default("{}"))
+		return []render.Line{firstLine}
+	} else if !o.Expanded {
+		firstLine.AddSelectable(params.Theme.Default("{"))
+		firstLine.AddSelectable(params.Theme.Preview("..."))
+		firstLine.AddSelectable(params.Theme.Default("}"))
+		return []render.Line{firstLine}
 	} else {
-		builder.AddString(params.Theme.Default("{"))
-		params.IndentRight()
+		firstLine.AddSelectable(params.Theme.Default("{"))
+		out := []render.Line{firstLine}
 
 		keys := o.Keys()
-		for i, k := range keys {
+		for _, k := range keys {
 			v := o.value[k]
 
-			builder.InsertNewLine()
-			params.NextLine()
+			line := render.Line{Theme: params.Theme, PointsTo: v}
+
 			quotedKey := fmt.Sprintf("\"%v\"", k)
-			builder.AddString(params.Theme.Key(quotedKey))
+			line.AddSelectable(params.Theme.Key(quotedKey))
+			line.AddUnselectable(params.Theme.Default(": "))
+			out = append(out, line)
 
-			params.EndCursorForCurrentLine()
-			builder.AddUnSelectableString(params.Theme.Default(": "))
-			builder.WriteString(v.View(params))
-
-			if i < len(keys)-1 {
-				builder.WriteString(",")
-			}
+			lines := v.View(params.IndentedRight())
+			out = append(out, lines...)
 		}
-		params.IndentLeft()
-		builder.InsertNewLine()
-		params.NextLine()
-		builder.AddString(params.Theme.Default("}"))
-		return builder.String()
+		lastLine := render.Line{Theme: params.Theme, PointsTo: o, PointsToEnd: true}
+		lastLine.AddSelectable(params.Theme.Default("}"))
+		out = append(out, lastLine)
+		return out
 	}
 }

@@ -1,11 +1,27 @@
 package render
 
 type Model interface {
-	View(params *ViewParams) string
-	Selected(cursor int) (selected Model, cursorPosition int)
+	View(params ViewParams) []Line
 	Address() string
+}
+
+type Collapser interface {
 	Expand()
 	Collapse()
-	ViewHeight() int
+}
+type Childrener interface {
 	Children() []Model
 }
+
+type BaseCollapser struct {
+	Expanded bool
+}
+
+func (c *BaseCollapser) Expand()   { c.Expanded = true }
+func (c *BaseCollapser) Collapse() { c.Expanded = false }
+
+type BaseModel struct {
+	Addr string
+}
+
+func (m *BaseModel) Address() string { return m.Addr }

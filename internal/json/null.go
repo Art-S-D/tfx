@@ -5,26 +5,11 @@ import (
 )
 
 type jsonNull struct {
-	address string
+	render.BaseModel
 }
 
-func (n *jsonNull) Address() string {
-	return n.address
-}
-
-func (n *jsonNull) Expand()   {}
-func (n *jsonNull) Collapse() {}
-func (n *jsonNull) ViewHeight() int {
-	return 1
-}
-func (n *jsonNull) Selected(cursor int) (selected render.Model, cursorPosition int) {
-	return n, 0
-}
-func (n *jsonNull) Children() []render.Model {
-	return []render.Model{}
-}
-func (s *jsonNull) View(params *render.ViewParams) string {
-	builder := render.NewBuilder(params)
-	builder.AddString(params.Theme.Null("null"))
-	return builder.String()
+func (n *jsonNull) View(params render.ViewParams) []render.Line {
+	line := render.Line{Theme: params.Theme, PointsTo: n}
+	line.AddSelectable(params.Theme.Null("null"))
+	return []render.Line{line}
 }
