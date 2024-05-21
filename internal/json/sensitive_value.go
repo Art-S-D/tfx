@@ -29,11 +29,11 @@ func (v *SensitiveValue) Children() []render.Model {
 	}
 }
 
-func (v *SensitiveValue) View(params render.ViewParams) []render.Line {
+func (v *SensitiveValue) View(params render.ViewParams) []render.Token {
 	if !v.shown {
-		line := render.Line{Theme: params.Theme, PointsTo: v}
+		line := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: v, LineBreak: true}
 		line.AddSelectable(params.Theme.Preview("(sensitive)"))
-		return []render.Line{line}
+		return []render.Token{line}
 	} else {
 		return v.value.View(params)
 	}

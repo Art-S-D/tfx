@@ -33,25 +33,25 @@ func (m *StateModuleModel) Children() []render.Model {
 	return m.content
 }
 
-func (m *StateModuleModel) View(params render.ViewParams) []render.Line {
+func (m *StateModuleModel) View(params render.ViewParams) []render.Token {
 
-	firstLine := render.Line{Theme: params.Theme, PointsTo: m}
+	firstLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m, LineBreak: true}
 	firstLine.AddSelectable(
 		params.Theme.Type("module"),
 		params.Theme.Default(" "),
 		params.Theme.Key(m.module.Address),
 	)
-	firstLine.AddUnselectable(params.Theme.Default("{"))
+	firstLine.AddUnselectable(params.Theme.Default(" {"))
 
 	if !m.Expanded {
 		firstLine.AddUnselectable(
 			params.Theme.Preview("..."),
 			params.Theme.Default("}"),
 		)
-		return []render.Line{firstLine}
+		return []render.Token{firstLine}
 	}
 
-	var out []render.Line
+	var out []render.Token
 	out = append(out, firstLine)
 
 	for _, model := range m.content {
@@ -59,7 +59,7 @@ func (m *StateModuleModel) View(params render.ViewParams) []render.Line {
 		out = append(out, lines...)
 	}
 
-	lastLine := render.Line{Theme: params.Theme, PointsTo: m, PointsToEnd: true}
+	lastLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m, PointsToEnd: true, LineBreak: true}
 	lastLine.AddSelectable(params.Theme.Default("}"))
 	out = append(out, lastLine)
 	return out

@@ -13,7 +13,7 @@ type stateModel struct {
 	screenStart               int // should always be between [0, rootModule.Height() - screenHeight)
 
 	rootModule *tfstate.RootModuleModel
-	screen     []render.Line
+	screen     []render.Token
 
 	theme *style.Theme
 }

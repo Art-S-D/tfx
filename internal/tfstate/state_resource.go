@@ -65,8 +65,8 @@ func (m *StateResourceModel) Children() []render.Model {
 	return out
 }
 
-func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Theme: params.Theme, PointsTo: m}
+func (m *StateResourceModel) View(params render.ViewParams) []render.Token {
+	firstLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m, LineBreak: true}
 	firstLine.AddSelectable(
 		params.Theme.Type(m.resourceMode()),
 		params.Theme.Default(" "),
@@ -82,17 +82,17 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
 		)
 	}
 
-	firstLine.AddUnselectable(params.Theme.Default("{"))
+	firstLine.AddUnselectable(params.Theme.Default(" {"))
 
 	if !m.Expanded {
 		firstLine.AddUnselectable(
 			params.Theme.Preview("..."),
 			params.Theme.Default("}"),
 		)
-		return []render.Line{firstLine}
+		return []render.Token{firstLine}
 	}
 
-	var out []render.Line
+	var out []render.Token
 	out = append(out, firstLine)
 
 	// render resource body
@@ -101,7 +101,7 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
 	for _, k := range keys {
 		v := m.attributes[k]
 
-		line := render.Line{Theme: params.Theme, PointsTo: v}
+		line := render.Token{Theme: params.Theme, Indentation: params.IndentedRight().Indentation, PointsTo: v, EndCursor: true}
 		line.AddSelectable(params.Theme.Key(k))
 
 		spacing := strings.Repeat(" ", len(longestKey)-len(k))
@@ -115,7 +115,7 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
 		out = append(out, lines...)
 	}
 
-	lastLine := render.Line{Theme: params.Theme, PointsTo: m, PointsToEnd: true}
+	lastLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m, PointsToEnd: true, LineBreak: true}
 	lastLine.AddSelectable(params.Theme.Default("}"))
 	out = append(out, lastLine)
 	return out

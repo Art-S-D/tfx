@@ -26,26 +26,26 @@ func (b *jsonObject) Children() []render.Model {
 	return out
 }
 
-func (o *jsonObject) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Theme: params.Theme, PointsTo: o}
+func (o *jsonObject) View(params render.ViewParams) []render.Token {
+	firstLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: o, LineBreak: true}
 
 	if len(o.value) == 0 {
 		firstLine.AddSelectable(params.Theme.Default("{}"))
-		return []render.Line{firstLine}
+		return []render.Token{firstLine}
 	} else if !o.Expanded {
 		firstLine.AddSelectable(params.Theme.Default("{"))
 		firstLine.AddSelectable(params.Theme.Preview("..."))
 		firstLine.AddSelectable(params.Theme.Default("}"))
-		return []render.Line{firstLine}
+		return []render.Token{firstLine}
 	} else {
 		firstLine.AddSelectable(params.Theme.Default("{"))
-		out := []render.Line{firstLine}
+		out := []render.Token{firstLine}
 
 		keys := o.Keys()
 		for _, k := range keys {
 			v := o.value[k]
 
-			line := render.Line{Theme: params.Theme, PointsTo: v}
+			line := render.Token{Theme: params.Theme, Indentation: params.IndentedRight().Indentation, PointsTo: v, EndCursor: true}
 
 			quotedKey := fmt.Sprintf("\"%v\"", k)
 			line.AddSelectable(params.Theme.Key(quotedKey))
@@ -55,7 +55,7 @@ func (o *jsonObject) View(params render.ViewParams) []render.Line {
 			lines := v.View(params.IndentedRight())
 			out = append(out, lines...)
 		}
-		lastLine := render.Line{Theme: params.Theme, PointsTo: o, PointsToEnd: true}
+		lastLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: o, PointsToEnd: true, LineBreak: true}
 		lastLine.AddSelectable(params.Theme.Default("}"))
 		out = append(out, lastLine)
 		return out

@@ -11,8 +11,8 @@ type jsonBool struct {
 	value bool
 }
 
-func (b *jsonBool) View(params render.ViewParams) []render.Line {
-	line := render.Line{Theme: params.Theme, PointsTo: b}
+func (b *jsonBool) View(params render.ViewParams) []render.Token {
+	line := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: b, LineBreak: true}
 	line.AddSelectable(params.Theme.Boolean(fmt.Sprintf("%v", b.value)))
-	return []render.Line{line}
+	return []render.Token{line}
 }

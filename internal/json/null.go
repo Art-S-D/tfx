@@ -8,8 +8,8 @@ type jsonNull struct {
 	render.BaseModel
 }
 
-func (n *jsonNull) View(params render.ViewParams) []render.Line {
-	line := render.Line{Theme: params.Theme, PointsTo: n}
+func (n *jsonNull) View(params render.ViewParams) []render.Token {
+	line := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: n, LineBreak: true}
 	line.AddSelectable(params.Theme.Null("null"))
-	return []render.Line{line}
+	return []render.Token{line}
 }

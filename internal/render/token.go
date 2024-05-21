@@ -8,30 +8,31 @@ import (
 )
 
 // a line on the screen that can be rendered with the cursor or not
-type Line struct {
+type Token struct {
 	Theme       *style.Theme
 	PointsTo    Model
 	PointsToEnd bool // true if this the last line of an item, eg: }, ]
 
-	// LineBreak    bool
-	// Colon        bool
-	// EndCursor    bool
+	LineBreak bool
+	EndCursor bool
+
+	Indentation uint8
 
 	selectable   []lipgloss.Style
 	unselectable []lipgloss.Style
 }
 
 // use a lipgloss.Style or a string
-func (l *Line) AddUnselectable(s ...lipgloss.Style) {
+func (l *Token) AddUnselectable(s ...lipgloss.Style) {
 	l.unselectable = append(l.unselectable, s...)
 }
 
 // use a lipgloss.Style or a string
-func (l *Line) AddSelectable(s ...lipgloss.Style) {
+func (l *Token) AddSelectable(s ...lipgloss.Style) {
 	l.selectable = append(l.selectable, s...)
 }
 
-func (l *Line) String() string {
+func (l *Token) String() string {
 	var out strings.Builder
 	for _, s := range l.selectable {
 		out.WriteString(s.String())
@@ -42,7 +43,7 @@ func (l *Line) String() string {
 	return out.String()
 }
 
-func (l *Line) renderLineElement(selected bool, style lipgloss.Style) string {
+func (l *Token) renderLineElement(selected bool, style lipgloss.Style) string {
 	if selected {
 		return l.Theme.Cursor(style.Value()).String()
 	} else {
@@ -51,7 +52,7 @@ func (l *Line) renderLineElement(selected bool, style lipgloss.Style) string {
 
 }
 
-func (l *Line) Render(selected bool) string {
+func (l *Token) Render(selected bool) string {
 	var out strings.Builder
 	for _, s := range l.selectable {
 		out.WriteString(l.renderLineElement(selected, s))
@@ -60,12 +61,9 @@ func (l *Line) Render(selected bool) string {
 		out.WriteString(s.String())
 	}
 
-	// if l.Colon {
-	// 	out.WriteRune(',')
-	// }
-	// if l.LineBreak {
-	// 	out.WriteRune('\n')
-	// }
+	if l.LineBreak {
+		out.WriteRune('\n')
+	}
 
 	return out.String()
 }

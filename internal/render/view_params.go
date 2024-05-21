@@ -7,7 +7,7 @@ const INDENT_WIDTH = 2
 // a wrapper around strings.Builder that can manage indentation and rendering the Cursor
 type ViewParams struct {
 	CurrentLine int
-	Indentation int
+	Indentation uint8
 
 	Cursor                   int
 	SkipCursorForCurrentLine bool
