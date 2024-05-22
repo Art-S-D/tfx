@@ -9,7 +9,7 @@ type jsonNull struct {
 }
 
 func (n *jsonNull) View(params render.ViewParams) []render.Line {
-	line := render.Line{Theme: params.Theme, PointsTo: n}
+	line := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: n}
 	line.AddSelectable(params.Theme.Null("null"))
 	return []render.Line{line}
 }

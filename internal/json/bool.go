@@ -12,7 +12,7 @@ type jsonBool struct {
 }
 
 func (b *jsonBool) View(params render.ViewParams) []render.Line {
-	line := render.Line{Theme: params.Theme, PointsTo: b}
+	line := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: b}
 	line.AddSelectable(params.Theme.Boolean(fmt.Sprintf("%v", b.value)))
 	return []render.Line{line}
 }

@@ -41,7 +41,7 @@ func (m *StateModuleModel) View(params render.ViewParams) []render.Line {
 		params.Theme.Default(" "),
 		params.Theme.Key(m.module.Address),
 	)
-	firstLine.AddUnselectable(params.Theme.Default("{"))
+	firstLine.AddUnselectable(params.Theme.Default(" {"))
 
 	if !m.Expanded {
 		firstLine.AddUnselectable(

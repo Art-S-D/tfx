@@ -4,7 +4,6 @@ import (
 	encodingJson "encoding/json"
 	"fmt"
 	"slices"
-	"strings"
 
 	json "github.com/Art-S-D/tfx/internal/json"
 	"github.com/Art-S-D/tfx/internal/render"
@@ -66,7 +65,7 @@ func (m *StateResourceModel) Children() []render.Model {
 }
 
 func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Theme: params.Theme, PointsTo: m}
+	firstLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m}
 	firstLine.AddSelectable(
 		params.Theme.Type(m.resourceMode()),
 		params.Theme.Default(" "),
@@ -82,7 +81,7 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
 		)
 	}
 
-	firstLine.AddUnselectable(params.Theme.Default("{"))
+	firstLine.AddUnselectable(params.Theme.Default(" {"))
 
 	if !m.Expanded {
 		firstLine.AddUnselectable(
@@ -101,21 +100,12 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
 	for _, k := range keys {
 		v := m.attributes[k]
 
-		line := render.Line{Theme: params.Theme, PointsTo: v}
-		line.AddSelectable(params.Theme.Key(k))
-
-		spacing := strings.Repeat(" ", len(longestKey)-len(k))
-		line.AddUnselectable(
-			params.Theme.Default(spacing),
-			params.Theme.Default(" = "),
-		)
-		out = append(out, line)
-
-		lines := v.View(params.IndentedRight())
+		kv := json.KeyVal{Key: k, Value: v, KeyPadding: uint8(len(longestKey))}
+		lines := kv.View(params.IndentedRight())
 		out = append(out, lines...)
 	}
 
-	lastLine := render.Line{Theme: params.Theme, PointsTo: m, PointsToEnd: true}
+	lastLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m, PointsToEnd: true}
 	lastLine.AddSelectable(params.Theme.Default("}"))
 	out = append(out, lastLine)
 	return out

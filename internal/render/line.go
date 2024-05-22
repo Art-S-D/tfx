@@ -13,9 +13,9 @@ type Line struct {
 	PointsTo    Model
 	PointsToEnd bool // true if this the last line of an item, eg: }, ]
 
-	// LineBreak    bool
-	// Colon        bool
-	// EndCursor    bool
+	Indentation uint8
+	KeyPadding  uint8
+	Key         string
 
 	selectable   []lipgloss.Style
 	unselectable []lipgloss.Style
@@ -31,8 +31,29 @@ func (l *Line) AddSelectable(s ...lipgloss.Style) {
 	l.selectable = append(l.selectable, s...)
 }
 
+func (l *Line) MergeWith(other *Line) *Line {
+	out := *l
+	out.selectable = nil
+	out.unselectable = nil
+	out.selectable = append(out.selectable, l.selectable...)
+	out.unselectable = append(out.unselectable, l.unselectable...)
+	out.unselectable = append(out.unselectable, other.selectable...)
+	out.unselectable = append(out.unselectable, other.unselectable...)
+	return &out
+}
+
 func (l *Line) String() string {
 	var out strings.Builder
+	for range l.Indentation {
+		out.WriteRune(' ')
+	}
+	if l.Key != "" {
+		out.WriteString(l.Key)
+		for range l.KeyPadding {
+			out.WriteRune(' ')
+		}
+	}
+
 	for _, s := range l.selectable {
 		out.WriteString(s.String())
 	}
@@ -53,6 +74,20 @@ func (l *Line) renderLineElement(selected bool, style lipgloss.Style) string {
 
 func (l *Line) Render(selected bool) string {
 	var out strings.Builder
+
+	for range l.Indentation {
+		out.WriteRune(' ')
+	}
+	if l.Key != "" {
+		if selected {
+			out.WriteString(l.Theme.Key(l.Key).String())
+			selected = false
+		}
+		for range l.KeyPadding {
+			out.WriteRune(' ')
+		}
+	}
+
 	for _, s := range l.selectable {
 		out.WriteString(l.renderLineElement(selected, s))
 	}

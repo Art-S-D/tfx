@@ -1,7 +1,7 @@
 package json
 
 import (
-	"fmt"
+	"slices"
 
 	"github.com/Art-S-D/tfx/internal/render"
 	"github.com/Art-S-D/tfx/internal/utils"
@@ -27,7 +27,7 @@ func (b *jsonObject) Children() []render.Model {
 }
 
 func (o *jsonObject) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Theme: params.Theme, PointsTo: o}
+	firstLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: o}
 
 	if len(o.value) == 0 {
 		firstLine.AddSelectable(params.Theme.Default("{}"))
@@ -42,20 +42,15 @@ func (o *jsonObject) View(params render.ViewParams) []render.Line {
 		out := []render.Line{firstLine}
 
 		keys := o.Keys()
+		longestKey := slices.MaxFunc(keys, func(s1, s2 string) int { return len(s1) - len(s2) })
 		for _, k := range keys {
 			v := o.value[k]
 
-			line := render.Line{Theme: params.Theme, PointsTo: v}
-
-			quotedKey := fmt.Sprintf("\"%v\"", k)
-			line.AddSelectable(params.Theme.Key(quotedKey))
-			line.AddUnselectable(params.Theme.Default(": "))
-			out = append(out, line)
-
-			lines := v.View(params.IndentedRight())
+			kv := KeyVal{Key: k, Value: v, KeyPadding: uint8(len(longestKey))}
+			lines := kv.View(params.IndentedRight())
 			out = append(out, lines...)
 		}
-		lastLine := render.Line{Theme: params.Theme, PointsTo: o, PointsToEnd: true}
+		lastLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: o, PointsToEnd: true}
 		lastLine.AddSelectable(params.Theme.Default("}"))
 		out = append(out, lastLine)
 		return out

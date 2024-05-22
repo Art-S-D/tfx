@@ -12,7 +12,7 @@ type jsonString struct {
 }
 
 func (s *jsonString) View(params render.ViewParams) []render.Line {
-	line := render.Line{Theme: params.Theme, PointsTo: s}
+	line := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: s}
 	v := fmt.Sprintf("\"%s\"", s.value)
 	line.AddSelectable(params.Theme.String(v))
 	return []render.Line{line}

@@ -88,10 +88,10 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "backspace":
 			selected := m.Selected()
 			if collapser, ok := selected.(render.Collapser); ok {
-				collapser.Collapse()
 				if m.screen[m.cursor].PointsToEnd {
-					m.cursor -= len(selected.View(m.ViewParams()))
+					m.cursor -= len(selected.View(m.ViewParams())) - 1
 				}
+				collapser.Collapse()
 				m.clampCursor()
 				m.clampScreen()
 				m.RefreshScreen()

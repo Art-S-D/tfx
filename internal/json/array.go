@@ -15,7 +15,7 @@ func (a *jsonArray) Children() []render.Model {
 }
 
 func (a *jsonArray) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Theme: params.Theme, PointsTo: a}
+	firstLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: a}
 
 	if len(a.value) == 0 {
 		firstLine.AddSelectable(params.Theme.Default("[]"))
@@ -35,7 +35,7 @@ func (a *jsonArray) View(params render.ViewParams) []render.Line {
 			out = append(out, lines...)
 		}
 
-		lastLine := render.Line{Theme: params.Theme, PointsTo: a, PointsToEnd: true}
+		lastLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: a, PointsToEnd: true}
 		lastLine.AddSelectable(params.Theme.Default("]"))
 		out = append(out, lastLine)
 		return out
