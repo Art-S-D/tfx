@@ -24,7 +24,6 @@ func (m *stateModel) ViewParams() render.ViewParams {
 		Indentation:              0,
 		SkipCursorForCurrentLine: false,
 
-		Theme:        m.theme,
 		Cursor:       m.cursor,
 		ScreenStart:  m.screenStart,
 		ScreenWidth:  m.screenWidth,

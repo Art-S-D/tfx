@@ -2,6 +2,7 @@ package tfstate
 
 import (
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 	tfjson "github.com/hashicorp/terraform-json"
 )
 
@@ -35,18 +36,18 @@ func (m *StateModuleModel) Children() []render.Model {
 
 func (m *StateModuleModel) View(params render.ViewParams) []render.Token {
 
-	firstLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m, LineBreak: true}
+	firstLine := render.Line{PointsTo: m}
 	firstLine.AddSelectable(
-		params.Theme.Type("module"),
-		params.Theme.Default(" "),
-		params.Theme.Key(m.module.Address),
+		style.Type("module"),
+		style.Default(" "),
+		style.Key(m.module.Address),
 	)
-	firstLine.AddUnselectable(params.Theme.Default(" {"))
+	firstLine.AddUnselectable(style.Default(" {"))
 
 	if !m.Expanded {
 		firstLine.AddUnselectable(
-			params.Theme.Preview("..."),
-			params.Theme.Default("}"),
+			style.Preview("..."),
+			style.Default("}"),
 		)
 		return []render.Token{firstLine}
 	}
@@ -59,8 +60,8 @@ func (m *StateModuleModel) View(params render.ViewParams) []render.Token {
 		out = append(out, lines...)
 	}
 
-	lastLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m, PointsToEnd: true, LineBreak: true}
-	lastLine.AddSelectable(params.Theme.Default("}"))
+	lastLine := render.Line{PointsTo: m, PointsToEnd: true}
+	lastLine.AddSelectable(style.Default("}"))
 	out = append(out, lastLine)
 	return out
 }

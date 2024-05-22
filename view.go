@@ -39,7 +39,8 @@ func (m *stateModel) View() string {
 	screenSlice := m.screen[m.screenStart : m.screenStart+m.screenHeight-1]
 	var sb strings.Builder
 	for i, line := range screenSlice {
-		sb.WriteString(line.Render(i+m.screenStart == m.cursor))
+		sb.WriteString(line.Render(m.theme, i+m.screenStart == m.cursor))
+		sb.WriteRune('\n')
 	}
 	sb.WriteString(m.previewLine())
 	// screen := lipgloss.PlaceVertical(m.screenHeight-1, lipgloss.Top, screen)

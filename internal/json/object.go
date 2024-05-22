@@ -1,9 +1,10 @@
 package json
 
 import (
-	"fmt"
+	"slices"
 
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/utils"
 )
 
@@ -26,37 +27,32 @@ func (b *jsonObject) Children() []render.Model {
 	return out
 }
 
-func (o *jsonObject) View(params render.ViewParams) []render.Token {
-	firstLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: o, LineBreak: true}
+func (o *jsonObject) View(params render.ViewParams) []render.Line {
+	firstLine := render.Line{Indentation: params.Indentation, PointsTo: o}
 
 	if len(o.value) == 0 {
-		firstLine.AddSelectable(params.Theme.Default("{}"))
-		return []render.Token{firstLine}
+		firstLine.AddSelectable(style.Default("{}"))
+		return []render.Line{firstLine}
 	} else if !o.Expanded {
-		firstLine.AddSelectable(params.Theme.Default("{"))
-		firstLine.AddSelectable(params.Theme.Preview("..."))
-		firstLine.AddSelectable(params.Theme.Default("}"))
-		return []render.Token{firstLine}
+		firstLine.AddSelectable(style.Default("{"))
+		firstLine.AddSelectable(style.Preview("..."))
+		firstLine.AddSelectable(style.Default("}"))
+		return []render.Line{firstLine}
 	} else {
-		firstLine.AddSelectable(params.Theme.Default("{"))
-		out := []render.Token{firstLine}
+		firstLine.AddSelectable(style.Default("{"))
+		out := []render.Line{firstLine}
 
 		keys := o.Keys()
+		longestKey := slices.MaxFunc(keys, func(s1, s2 string) int { return len(s1) - len(s2) })
 		for _, k := range keys {
 			v := o.value[k]
 
-			line := render.Token{Theme: params.Theme, Indentation: params.IndentedRight().Indentation, PointsTo: v, EndCursor: true}
-
-			quotedKey := fmt.Sprintf("\"%v\"", k)
-			line.AddSelectable(params.Theme.Key(quotedKey))
-			line.AddUnselectable(params.Theme.Default(": "))
-			out = append(out, line)
-
-			lines := v.View(params.IndentedRight())
+			kv := KeyVal{Key: k, Value: v, KeyPadding: uint8(len(longestKey))}
+			lines := kv.View(params.IndentedRight())
 			out = append(out, lines...)
 		}
-		lastLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: o, PointsToEnd: true, LineBreak: true}
-		lastLine.AddSelectable(params.Theme.Default("}"))
+		lastLine := render.Line{Indentation: params.Indentation, PointsTo: o, PointsToEnd: true}
+		lastLine.AddSelectable(style.Default("}"))
 		out = append(out, lastLine)
 		return out
 	}

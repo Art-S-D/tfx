@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 )
 
 type jsonNumber struct {
@@ -11,9 +12,9 @@ type jsonNumber struct {
 	value float64
 }
 
-func (n *jsonNumber) View(params render.ViewParams) []render.Token {
-	line := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: n, LineBreak: true}
+func (n *jsonNumber) View(params render.ViewParams) []render.Line {
+	line := render.Line{Indentation: params.Indentation, PointsTo: n}
 	v := fmt.Sprintf("%.2f", n.value)
-	line.AddSelectable(params.Theme.Number(v))
-	return []render.Token{line}
+	line.AddSelectable(style.Number(v))
+	return []render.Line{line}
 }

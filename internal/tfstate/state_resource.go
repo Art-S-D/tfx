@@ -4,10 +4,10 @@ import (
 	encodingJson "encoding/json"
 	"fmt"
 	"slices"
-	"strings"
 
 	json "github.com/Art-S-D/tfx/internal/json"
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/utils"
 	tfjson "github.com/hashicorp/terraform-json"
 )
@@ -65,29 +65,29 @@ func (m *StateResourceModel) Children() []render.Model {
 	return out
 }
 
-func (m *StateResourceModel) View(params render.ViewParams) []render.Token {
-	firstLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m, LineBreak: true}
+func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
+	firstLine := render.Line{Indentation: params.Indentation, PointsTo: m}
 	firstLine.AddSelectable(
-		params.Theme.Type(m.resourceMode()),
-		params.Theme.Default(" "),
-		params.Theme.Key(m.resource.Type),
-		params.Theme.Default(" "),
-		params.Theme.Key(m.resource.Name),
+		style.Type(m.resourceMode()),
+		style.Default(" "),
+		style.Key(m.resource.Type),
+		style.Default(" "),
+		style.Key(m.resource.Name),
 	)
 
 	if m.resource.Index != nil {
 		firstLine.AddSelectable(
-			params.Theme.Default(" "),
-			params.Theme.Key(m.resourceIndex()),
+			style.Default(" "),
+			style.Key(m.resourceIndex()),
 		)
 	}
 
-	firstLine.AddUnselectable(params.Theme.Default(" {"))
+	firstLine.AddUnselectable(style.Default(" {"))
 
 	if !m.Expanded {
 		firstLine.AddUnselectable(
-			params.Theme.Preview("..."),
-			params.Theme.Default("}"),
+			style.Preview("..."),
+			style.Default("}"),
 		)
 		return []render.Token{firstLine}
 	}
@@ -101,22 +101,13 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Token {
 	for _, k := range keys {
 		v := m.attributes[k]
 
-		line := render.Token{Theme: params.Theme, Indentation: params.IndentedRight().Indentation, PointsTo: v, EndCursor: true}
-		line.AddSelectable(params.Theme.Key(k))
-
-		spacing := strings.Repeat(" ", len(longestKey)-len(k))
-		line.AddUnselectable(
-			params.Theme.Default(spacing),
-			params.Theme.Default(" = "),
-		)
-		out = append(out, line)
-
-		lines := v.View(params.IndentedRight())
+		kv := json.KeyVal{Key: k, Value: v, KeyPadding: uint8(len(longestKey))}
+		lines := kv.View(params.IndentedRight())
 		out = append(out, lines...)
 	}
 
-	lastLine := render.Token{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m, PointsToEnd: true, LineBreak: true}
-	lastLine.AddSelectable(params.Theme.Default("}"))
+	lastLine := render.Line{Indentation: params.Indentation, PointsTo: m, PointsToEnd: true}
+	lastLine.AddSelectable(style.Default("}"))
 	out = append(out, lastLine)
 	return out
 }

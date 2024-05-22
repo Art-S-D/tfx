@@ -4,65 +4,65 @@ import (
 	"strings"
 
 	"github.com/Art-S-D/tfx/internal/style"
-	"github.com/charmbracelet/lipgloss"
 )
 
 // a line on the screen that can be rendered with the cursor or not
-type Token struct {
-	Theme       *style.Theme
+type Line struct {
 	PointsTo    Model
 	PointsToEnd bool // true if this the last line of an item, eg: }, ]
 
-	LineBreak bool
-	EndCursor bool
-
 	Indentation uint8
 
-	selectable   []lipgloss.Style
-	unselectable []lipgloss.Style
+	selectable   []style.Str
+	unselectable []style.Str
 }
 
-// use a lipgloss.Style or a string
-func (l *Token) AddUnselectable(s ...lipgloss.Style) {
+func (l *Line) AddUnselectable(s ...style.Str) {
 	l.unselectable = append(l.unselectable, s...)
 }
 
-// use a lipgloss.Style or a string
-func (l *Token) AddSelectable(s ...lipgloss.Style) {
+func (l *Line) AddSelectable(s ...style.Str) {
 	l.selectable = append(l.selectable, s...)
 }
 
-func (l *Token) String() string {
+func (l *Line) MergeWith(other *Line) *Line {
+	out := *l
+	out.selectable = nil
+	out.unselectable = nil
+	out.selectable = append(out.selectable, l.selectable...)
+	out.unselectable = append(out.unselectable, l.unselectable...)
+	out.unselectable = append(out.unselectable, other.selectable...)
+	out.unselectable = append(out.unselectable, other.unselectable...)
+	return &out
+}
+
+func (l *Line) String() string {
 	var out strings.Builder
+	for range l.Indentation {
+		out.WriteRune(' ')
+	}
+
 	for _, s := range l.selectable {
-		out.WriteString(s.String())
+		out.WriteString(s.Value)
 	}
 	for _, s := range l.unselectable {
-		out.WriteString(s.String())
+		out.WriteString(s.Value)
 	}
 	return out.String()
 }
 
-func (l *Token) renderLineElement(selected bool, style lipgloss.Style) string {
-	if selected {
-		return l.Theme.Cursor(style.Value()).String()
-	} else {
-		return style.String()
+func (l *Line) Render(theme *style.Theme, selected bool) string {
+	var out strings.Builder
+
+	for range l.Indentation {
+		out.WriteRune(' ')
 	}
 
-}
-
-func (l *Token) Render(selected bool) string {
-	var out strings.Builder
 	for _, s := range l.selectable {
-		out.WriteString(l.renderLineElement(selected, s))
+		out.WriteString(theme.RenderCursor(selected, s))
 	}
 	for _, s := range l.unselectable {
-		out.WriteString(s.String())
-	}
-
-	if l.LineBreak {
-		out.WriteRune('\n')
+		out.WriteString(theme.Render(s))
 	}
 
 	return out.String()
