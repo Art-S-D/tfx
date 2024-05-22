@@ -34,7 +34,7 @@ func (m *StateModuleModel) Children() []render.Model {
 	return m.content
 }
 
-func (m *StateModuleModel) View(params render.ViewParams) []render.Token {
+func (m *StateModuleModel) View(params render.ViewParams) []render.Line {
 
 	firstLine := render.Line{PointsTo: m}
 	firstLine.AddSelectable(
@@ -49,10 +49,10 @@ func (m *StateModuleModel) View(params render.ViewParams) []render.Token {
 			style.Preview("..."),
 			style.Default("}"),
 		)
-		return []render.Token{firstLine}
+		return []render.Line{firstLine}
 	}
 
-	var out []render.Token
+	var out []render.Line
 	out = append(out, firstLine)
 
 	for _, model := range m.content {

@@ -7,7 +7,7 @@ import (
 	"github.com/Art-S-D/tfx/internal/render"
 )
 
-func linesToString(lines []render.Token) string {
+func linesToString(lines []render.Line) string {
 	var out strings.Builder
 	for _, l := range lines {
 		out.WriteString(l.String())

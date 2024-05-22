@@ -1,7 +1,7 @@
 package render
 
 type Model interface {
-	View(params ViewParams) []Token
+	View(params ViewParams) []Line
 	Address() string
 }
 

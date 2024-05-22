@@ -89,10 +89,10 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
 			style.Preview("..."),
 			style.Default("}"),
 		)
-		return []render.Token{firstLine}
+		return []render.Line{firstLine}
 	}
 
-	var out []render.Token
+	var out []render.Line
 	out = append(out, firstLine)
 
 	// render resource body
