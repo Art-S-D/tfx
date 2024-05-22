@@ -1,7 +1,5 @@
 package render
 
-import "github.com/Art-S-D/tfx/internal/style"
-
 const INDENT_WIDTH = 2
 
 // a wrapper around strings.Builder that can manage indentation and rendering the Cursor
@@ -11,8 +9,6 @@ type ViewParams struct {
 
 	Cursor                   int
 	SkipCursorForCurrentLine bool
-
-	Theme *style.Theme
 
 	ScreenStart  int
 	ScreenWidth  int

@@ -2,6 +2,7 @@ package json
 
 import (
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 )
 
 // assume it can only be revealed, not hidden afterwards
@@ -31,8 +32,8 @@ func (v *SensitiveValue) Children() []render.Model {
 
 func (v *SensitiveValue) View(params render.ViewParams) []render.Line {
 	if !v.shown {
-		line := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: v}
-		line.AddSelectable(params.Theme.Preview("(sensitive)"))
+		line := render.Line{Indentation: params.Indentation, PointsTo: v}
+		line.AddSelectable(style.Preview("(sensitive)"))
 		return []render.Line{line}
 	} else {
 		return v.value.View(params)

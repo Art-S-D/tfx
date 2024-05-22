@@ -2,6 +2,7 @@ package json
 
 import (
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 )
 
 type jsonNull struct {
@@ -9,7 +10,7 @@ type jsonNull struct {
 }
 
 func (n *jsonNull) View(params render.ViewParams) []render.Line {
-	line := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: n}
-	line.AddSelectable(params.Theme.Null("null"))
+	line := render.Line{Indentation: params.Indentation, PointsTo: n}
+	line.AddSelectable(style.Null("null"))
 	return []render.Line{line}
 }

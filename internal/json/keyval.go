@@ -1,10 +1,10 @@
 package json
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 )
 
 type KeyVal struct {
@@ -36,11 +36,11 @@ func (k *KeyVal) Children() []render.Model {
 }
 
 func (k *KeyVal) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: k}
-	firstLine.AddSelectable(params.Theme.Key(fmt.Sprintf("\"%s\"", k.Key)))
+	firstLine := render.Line{Indentation: params.Indentation, PointsTo: k}
+	firstLine.AddSelectable(style.Key(k.Key))
 	firstLine.AddUnselectable(
-		params.Theme.Default(strings.Repeat(" ", int(k.KeyPadding)-len(k.Key))),
-		params.Theme.Default(" = "),
+		style.Default(strings.Repeat(" ", int(k.KeyPadding)-len(k.Key))),
+		style.Default(" = "),
 	)
 
 	valueLines := k.Value.View(params)

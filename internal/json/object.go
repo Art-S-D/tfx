@@ -4,6 +4,7 @@ import (
 	"slices"
 
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/utils"
 )
 
@@ -27,18 +28,18 @@ func (b *jsonObject) Children() []render.Model {
 }
 
 func (o *jsonObject) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: o}
+	firstLine := render.Line{Indentation: params.Indentation, PointsTo: o}
 
 	if len(o.value) == 0 {
-		firstLine.AddSelectable(params.Theme.Default("{}"))
+		firstLine.AddSelectable(style.Default("{}"))
 		return []render.Line{firstLine}
 	} else if !o.Expanded {
-		firstLine.AddSelectable(params.Theme.Default("{"))
-		firstLine.AddSelectable(params.Theme.Preview("..."))
-		firstLine.AddSelectable(params.Theme.Default("}"))
+		firstLine.AddSelectable(style.Default("{"))
+		firstLine.AddSelectable(style.Preview("..."))
+		firstLine.AddSelectable(style.Default("}"))
 		return []render.Line{firstLine}
 	} else {
-		firstLine.AddSelectable(params.Theme.Default("{"))
+		firstLine.AddSelectable(style.Default("{"))
 		out := []render.Line{firstLine}
 
 		keys := o.Keys()
@@ -50,8 +51,8 @@ func (o *jsonObject) View(params render.ViewParams) []render.Line {
 			lines := kv.View(params.IndentedRight())
 			out = append(out, lines...)
 		}
-		lastLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: o, PointsToEnd: true}
-		lastLine.AddSelectable(params.Theme.Default("}"))
+		lastLine := render.Line{Indentation: params.Indentation, PointsTo: o, PointsToEnd: true}
+		lastLine.AddSelectable(style.Default("}"))
 		out = append(out, lastLine)
 		return out
 	}

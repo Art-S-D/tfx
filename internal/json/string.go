@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 )
 
 type jsonString struct {
@@ -12,8 +13,8 @@ type jsonString struct {
 }
 
 func (s *jsonString) View(params render.ViewParams) []render.Line {
-	line := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: s}
+	line := render.Line{Indentation: params.Indentation, PointsTo: s}
 	v := fmt.Sprintf("\"%s\"", s.value)
-	line.AddSelectable(params.Theme.String(v))
+	line.AddSelectable(style.String(v))
 	return []render.Line{line}
 }

@@ -4,30 +4,24 @@ import (
 	"strings"
 
 	"github.com/Art-S-D/tfx/internal/style"
-	"github.com/charmbracelet/lipgloss"
 )
 
 // a line on the screen that can be rendered with the cursor or not
 type Line struct {
-	Theme       *style.Theme
 	PointsTo    Model
 	PointsToEnd bool // true if this the last line of an item, eg: }, ]
 
 	Indentation uint8
-	KeyPadding  uint8
-	Key         string
 
-	selectable   []lipgloss.Style
-	unselectable []lipgloss.Style
+	selectable   []style.Str
+	unselectable []style.Str
 }
 
-// use a lipgloss.Style or a string
-func (l *Line) AddUnselectable(s ...lipgloss.Style) {
+func (l *Line) AddUnselectable(s ...style.Str) {
 	l.unselectable = append(l.unselectable, s...)
 }
 
-// use a lipgloss.Style or a string
-func (l *Line) AddSelectable(s ...lipgloss.Style) {
+func (l *Line) AddSelectable(s ...style.Str) {
 	l.selectable = append(l.selectable, s...)
 }
 
@@ -47,60 +41,29 @@ func (l *Line) String() string {
 	for range l.Indentation {
 		out.WriteRune(' ')
 	}
-	if l.Key != "" {
-		out.WriteString(l.Key)
-		for range l.KeyPadding {
-			out.WriteRune(' ')
-		}
-	}
 
 	for _, s := range l.selectable {
-		out.WriteString(s.String())
+		out.WriteString(s.Value)
 	}
 	for _, s := range l.unselectable {
-		out.WriteString(s.String())
+		out.WriteString(s.Value)
 	}
 	return out.String()
 }
 
-func (l *Line) renderLineElement(selected bool, style lipgloss.Style) string {
-	if selected {
-		return l.Theme.Cursor(style.Value()).String()
-	} else {
-		return style.String()
-	}
-
-}
-
-func (l *Line) Render(selected bool) string {
+func (l *Line) Render(theme *style.Theme, selected bool) string {
 	var out strings.Builder
 
 	for range l.Indentation {
 		out.WriteRune(' ')
 	}
-	if l.Key != "" {
-		if selected {
-			out.WriteString(l.Theme.Key(l.Key).String())
-			selected = false
-		}
-		for range l.KeyPadding {
-			out.WriteRune(' ')
-		}
-	}
 
 	for _, s := range l.selectable {
-		out.WriteString(l.renderLineElement(selected, s))
+		out.WriteString(theme.RenderCursor(selected, s))
 	}
 	for _, s := range l.unselectable {
-		out.WriteString(s.String())
+		out.WriteString(theme.Render(s))
 	}
-
-	// if l.Colon {
-	// 	out.WriteRune(',')
-	// }
-	// if l.LineBreak {
-	// 	out.WriteRune('\n')
-	// }
 
 	return out.String()
 }

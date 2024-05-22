@@ -7,6 +7,7 @@ import (
 
 	json "github.com/Art-S-D/tfx/internal/json"
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/utils"
 	tfjson "github.com/hashicorp/terraform-json"
 )
@@ -65,28 +66,28 @@ func (m *StateResourceModel) Children() []render.Model {
 }
 
 func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m}
+	firstLine := render.Line{Indentation: params.Indentation, PointsTo: m}
 	firstLine.AddSelectable(
-		params.Theme.Type(m.resourceMode()),
-		params.Theme.Default(" "),
-		params.Theme.Key(m.resource.Type),
-		params.Theme.Default(" "),
-		params.Theme.Key(m.resource.Name),
+		style.Type(m.resourceMode()),
+		style.Default(" "),
+		style.Key(m.resource.Type),
+		style.Default(" "),
+		style.Key(m.resource.Name),
 	)
 
 	if m.resource.Index != nil {
 		firstLine.AddSelectable(
-			params.Theme.Default(" "),
-			params.Theme.Key(m.resourceIndex()),
+			style.Default(" "),
+			style.Key(m.resourceIndex()),
 		)
 	}
 
-	firstLine.AddUnselectable(params.Theme.Default(" {"))
+	firstLine.AddUnselectable(style.Default(" {"))
 
 	if !m.Expanded {
 		firstLine.AddUnselectable(
-			params.Theme.Preview("..."),
-			params.Theme.Default("}"),
+			style.Preview("..."),
+			style.Default("}"),
 		)
 		return []render.Line{firstLine}
 	}
@@ -105,8 +106,8 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
 		out = append(out, lines...)
 	}
 
-	lastLine := render.Line{Theme: params.Theme, Indentation: params.Indentation, PointsTo: m, PointsToEnd: true}
-	lastLine.AddSelectable(params.Theme.Default("}"))
+	lastLine := render.Line{Indentation: params.Indentation, PointsTo: m, PointsToEnd: true}
+	lastLine.AddSelectable(style.Default("}"))
 	out = append(out, lastLine)
 	return out
 }
