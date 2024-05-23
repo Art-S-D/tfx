@@ -1,6 +1,8 @@
 package main
 
 import (
+	"slices"
+
 	"github.com/Art-S-D/tfx/internal/json"
 	"github.com/Art-S-D/tfx/internal/render"
 	tea "github.com/charmbracelet/bubbletea"
@@ -81,29 +83,37 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := m.Selected()
 			if collapser, ok := selected.(render.Collapser); ok {
 				collapser.Expand()
+				newLines := selected.View(m.ViewParams())
+				m.screen = slices.Replace(m.screen, m.cursor, m.cursor+1, newLines...)
 				m.clampCursor()
 				m.clampScreen()
 			}
-			m.RefreshScreen()
 		case "backspace":
 			selected := m.Selected()
 			if collapser, ok := selected.(render.Collapser); ok {
+				previousLines := selected.View(m.ViewParams())
+				start, end := m.cursor, m.cursor+len(previousLines)
 				if m.screen[m.cursor].PointsToEnd {
-					m.cursor -= len(selected.View(m.ViewParams())) - 1
+					start, end = m.cursor-len(previousLines)+1, m.cursor+1
+					m.cursor -= len(previousLines) - 1
 				}
 				collapser.Collapse()
+				newLines := selected.View(m.ViewParams())
+				m.screen = slices.Replace(m.screen, start, end, newLines...)
+
 				m.clampCursor()
 				m.clampScreen()
-				m.RefreshScreen()
 			}
 		case "r":
 			selected := m.Selected()
 			if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
 				sensitiveValue.Reveal()
+				newLines := sensitiveValue.View(m.ViewParams())
+				m.screen = slices.Replace(m.screen, m.cursor, m.cursor, newLines...)
+
 			}
 			m.clampCursor()
 			m.clampScreen()
-			m.RefreshScreen()
 		}
 	case tea.WindowSizeMsg:
 		m.screenHeight = msg.Height
