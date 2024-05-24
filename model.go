@@ -18,7 +18,7 @@ type stateModel struct {
 	theme *style.Theme
 }
 
-func (m *stateModel) RefreshScreen() {
+func (m *stateModel) refreshScreen() {
 	m.screen = m.rootModule.View()
 }
 func (m *stateModel) Init() tea.Cmd {

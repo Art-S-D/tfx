@@ -21,10 +21,16 @@ func (m *stateModel) ScreenHeight() int {
 func (m *stateModel) clampScreen() {
 	minScreen := 0
 	maxScreen := m.ScreenHeight() - m.screenHeight + 1
+
+	m.screenStart = min(m.screenStart, minScreen)
+	m.screenStart = max(m.screenStart, maxScreen) // this is important when collapsing a node at the bottom of the screen
+
+	// cursor is above the screen
 	if m.screenStart > m.cursor {
 		m.screenStart = max(minScreen, m.cursor)
 	}
 
+	// cursor is below the screen
 	// +2 because we need one for the preview line and one so that the cursor is one line on top of the bottom of the screen
 	if m.screenStart < m.cursor-m.screenHeight+2 {
 		m.screenStart = min(maxScreen, m.cursor-m.screenHeight+2)
@@ -81,7 +87,7 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := m.Selected()
 			if collapser, ok := selected.(render.Collapser); ok {
 				collapser.Expand()
-				m.RefreshScreen()
+				m.refreshScreen()
 
 				m.clampCursor()
 				m.clampScreen()
@@ -94,7 +100,7 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.cursor -= len(previousLines) - 1
 				}
 				collapser.Collapse()
-				m.RefreshScreen()
+				m.refreshScreen()
 
 				m.clampCursor()
 				m.clampScreen()
@@ -103,7 +109,7 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selected := m.Selected()
 			if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
 				sensitiveValue.Reveal()
-				m.RefreshScreen()
+				m.refreshScreen()
 
 				m.clampCursor()
 				m.clampScreen()

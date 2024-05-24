@@ -39,6 +39,7 @@ func main() {
 		rootModule: tfstate.RootModuleModelFromJson(*plan.Values.RootModule),
 		theme:      style.DefaultTheme,
 	}
+	terraformState.refreshScreen()
 
 	p := tea.NewProgram(
 		&terraformState,
