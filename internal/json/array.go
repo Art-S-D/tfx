@@ -6,21 +6,23 @@ import (
 )
 
 type jsonArray struct {
-	value []*render.Node
+	render.BaseModel
+	render.BaseCollapser
+	value []render.Model
 }
 
-func (a *jsonArray) Children() []*render.Node {
+func (a *jsonArray) Children() []render.Model {
 	return a.value
 }
 
-func (a *jsonArray) GenerateLines(node *render.Node) []render.Line {
-	firstLine := render.Line{Indentation: node.Depth, PointsTo: node}
+func (a *jsonArray) View() []render.Line {
+	firstLine := render.Line{PointsTo: a}
 
 	if len(a.value) == 0 {
 		firstLine.AddSelectable(style.Default("[]"))
 		return []render.Line{firstLine}
 	}
-	if !node.Expanded {
+	if !a.Expanded {
 		firstLine.AddSelectable(style.Default("["))
 		firstLine.AddSelectable(style.Preview("..."))
 		firstLine.AddSelectable(style.Default("]"))
@@ -30,11 +32,12 @@ func (a *jsonArray) GenerateLines(node *render.Node) []render.Line {
 		out := []render.Line{firstLine}
 
 		for _, v := range a.value {
-			lines := v.Lines()
+			lines := v.View()
+			render.Indent(lines)
 			out = append(out, lines...)
 		}
 
-		lastLine := render.Line{Indentation: node.Depth, PointsTo: node, PointsToEnd: true}
+		lastLine := render.Line{PointsTo: a, PointsToEnd: true}
 		lastLine.AddSelectable(style.Default("]"))
 		out = append(out, lastLine)
 		return out

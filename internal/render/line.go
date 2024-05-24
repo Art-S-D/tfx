@@ -6,9 +6,26 @@ import (
 	"github.com/Art-S-D/tfx/internal/style"
 )
 
+const INDENT_WIDTH = 2
+
+func Indent(lines []Line) {
+	for i := range lines {
+		lines[i].Indentation += 1
+	}
+}
+
+// testing utility, renders with style and no cursor
+func LinesToString(lines []Line) string {
+	var sb strings.Builder
+	for _, l := range lines {
+		sb.WriteString(l.String())
+	}
+	return sb.String()
+}
+
 // a line on the screen that can be rendered with the cursor or not
 type Line struct {
-	PointsTo    *Node
+	PointsTo    Model
 	PointsToEnd bool // true if this the last line of an item, eg: }, ]
 
 	Indentation uint8
@@ -36,9 +53,11 @@ func (l *Line) MergeWith(other *Line) *Line {
 	return &out
 }
 
+// renders with no style and no cursor
 func (l *Line) String() string {
 	var out strings.Builder
-	for range l.Indentation {
+
+	for range l.Indentation * INDENT_WIDTH {
 		out.WriteRune(' ')
 	}
 
@@ -54,7 +73,7 @@ func (l *Line) String() string {
 func (l *Line) Render(theme *style.Theme, selected bool) string {
 	var out strings.Builder
 
-	for range l.Indentation {
+	for range l.Indentation * INDENT_WIDTH {
 		out.WriteRune(' ')
 	}
 

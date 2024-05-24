@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Art-S-D/tfx/internal/json"
+	"github.com/Art-S-D/tfx/internal/render"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -11,7 +12,7 @@ import (
 // }
 
 func (m *stateModel) ScreenHeight() int {
-	return len(m.Screen())
+	return len(m.screen)
 }
 
 // moves the screen so that the cursor is in view
@@ -78,24 +79,35 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.goToBottom()
 		case "enter":
 			selected := m.Selected()
-			selected.Expand()
+			if collapser, ok := selected.(render.Collapser); ok {
+				collapser.Expand()
+				m.RefreshScreen()
 
-			m.clampCursor()
-			m.clampScreen()
+				m.clampCursor()
+				m.clampScreen()
+			}
 		case "backspace":
 			selected := m.Selected()
-			selected.Collapse()
+			if collapser, ok := selected.(render.Collapser); ok {
+				previousLines := selected.View()
+				if m.screen[m.cursor].PointsToEnd {
+					m.cursor -= len(previousLines) - 1
+				}
+				collapser.Collapse()
+				m.RefreshScreen()
 
-			m.clampCursor()
-			m.clampScreen()
-
+				m.clampCursor()
+				m.clampScreen()
+			}
 		case "r":
 			selected := m.Selected()
-			if sensitiveValue, ok := selected.Liner.(*json.SensitiveValue); ok {
+			if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
 				sensitiveValue.Reveal()
+				m.RefreshScreen()
+
+				m.clampCursor()
+				m.clampScreen()
 			}
-			m.clampCursor()
-			m.clampScreen()
 		}
 	case tea.WindowSizeMsg:
 		m.screenHeight = msg.Height

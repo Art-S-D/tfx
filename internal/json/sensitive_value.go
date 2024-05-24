@@ -8,7 +8,7 @@ import (
 // assume it can only be revealed, not hidden afterwards
 // once revealed it acts as if it does not exists
 type SensitiveValue struct {
-	value *render.Node
+	value render.Model
 	shown bool
 }
 
@@ -16,19 +16,25 @@ type SensitiveValue struct {
 // also it's probably better to have it on another key that expand for safety precautions
 func (v *SensitiveValue) Reveal() {
 	v.shown = true
-	v.value.ClearCache()
+}
+func (s *SensitiveValue) Address() string {
+	return s.value.Address()
 }
 
-func (v *SensitiveValue) Children() []*render.Node {
-	return v.value.Children()
+func (v *SensitiveValue) Children() []render.Model {
+	if childrener, ok := v.value.(render.Childrener); ok {
+		return childrener.Children()
+	} else {
+		return []render.Model{}
+	}
 }
 
-func (v *SensitiveValue) GenerateLines(node *render.Node) []render.Line {
+func (v *SensitiveValue) View() []render.Line {
 	if !v.shown {
-		line := render.Line{Indentation: node.Depth, PointsTo: node}
+		line := render.Line{PointsTo: v}
 		line.AddSelectable(style.Preview("(sensitive)"))
 		return []render.Line{line}
 	} else {
-		return v.value.Lines()
+		return v.value.View()
 	}
 }

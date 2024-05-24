@@ -7,35 +7,36 @@ import (
 )
 
 type StateModuleModel struct {
+	render.BaseCollapser
 	module  *tfjson.StateModule
-	content []*render.Node
+	content []render.Model
 }
 
-func StateModuleModelFromJson(json *tfjson.StateModule, parent *render.Node) *render.Node {
+func StateModuleModelFromJson(json *tfjson.StateModule) *StateModuleModel {
 	module := &StateModuleModel{module: json}
-	out := &render.Node{Address: json.Address, Depth: parent.Depth + 1, Parent: parent, Liner: module}
 
 	for _, resource := range json.Resources {
-		childResource := NewStateResourceModel(resource, out)
+		childResource := NewStateResourceModel(resource)
 		module.content = append(module.content, childResource)
 	}
 	for _, mod := range json.ChildModules {
-		childModule := StateModuleModelFromJson(mod, out)
-		module.content = append(module.content, out, childModule)
+		childModule := StateModuleModelFromJson(mod)
+		module.content = append(module.content, childModule)
 	}
-	return out
+	return module
 }
 
 func (m *StateModuleModel) Address() string {
 	return m.module.Address
 }
 
-func (m *StateModuleModel) Children() []*render.Node {
+func (m *StateModuleModel) Children() []render.Model {
 	return m.content
 }
 
-func (m *StateModuleModel) GenerateLines(node *render.Node) []render.Line {
-	firstLine := render.Line{Indentation: node.Depth, PointsTo: node}
+func (m *StateModuleModel) View() []render.Line {
+
+	firstLine := render.Line{PointsTo: m}
 	firstLine.AddSelectable(
 		style.Type("module"),
 		style.Default(" "),
@@ -43,7 +44,7 @@ func (m *StateModuleModel) GenerateLines(node *render.Node) []render.Line {
 	)
 	firstLine.AddUnselectable(style.Default(" {"))
 
-	if !node.Expanded {
+	if !m.Expanded {
 		firstLine.AddUnselectable(
 			style.Preview("..."),
 			style.Default("}"),
@@ -55,11 +56,12 @@ func (m *StateModuleModel) GenerateLines(node *render.Node) []render.Line {
 	out = append(out, firstLine)
 
 	for _, model := range m.content {
-		lines := model.Lines()
+		lines := model.View()
+		render.Indent(lines)
 		out = append(out, lines...)
 	}
 
-	lastLine := render.Line{Indentation: node.Depth, PointsTo: node, PointsToEnd: true}
+	lastLine := render.Line{PointsTo: m, PointsToEnd: true}
 	lastLine.AddSelectable(style.Default("}"))
 	out = append(out, lastLine)
 	return out
