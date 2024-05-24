@@ -13,36 +13,36 @@ import (
 )
 
 type StateResourceModel struct {
-	render.BaseCollapser
 	resource   *tfjson.StateResource
-	attributes map[string]render.Model
+	attributes map[string]*render.Node
 }
 
-func NewStateResourceModel(resource *tfjson.StateResource) *StateResourceModel {
-	out := StateResourceModel{resource: resource, attributes: make(map[string]render.Model)}
-	for k, v := range resource.AttributeValues {
-		addr := fmt.Sprintf("%s.%s", resource.Address, k)
+func NewStateResourceModel(jsonResource *tfjson.StateResource, parent *render.Node) *render.Node {
+	resource := &StateResourceModel{resource: jsonResource, attributes: make(map[string]*render.Node)}
+	out := &render.Node{Liner: resource, Parent: parent, Depth: parent.Depth + 1, Address: jsonResource.Address}
+	keys := utils.KeysOrdered(jsonResource.AttributeValues)
+	longestKey := slices.MaxFunc(keys, func(s1, s2 string) int { return len(s1) - len(s2) })
+	for k, v := range jsonResource.AttributeValues {
+		addr := fmt.Sprintf("%s.%s", jsonResource.Address, k)
 
 		var sensitive map[string]any
-		err := encodingJson.Unmarshal(resource.SensitiveValues, &sensitive)
+		err := encodingJson.Unmarshal(jsonResource.SensitiveValues, &sensitive)
 		if err != nil {
 			panic(fmt.Sprintf("failed to parse sensitive value %v", sensitive))
 		}
 
-		out.attributes[k], err = json.ParseValue(v, sensitive[k], addr)
+		value, err := json.ParseValue(v, sensitive[k], out, addr)
 		if err != nil {
 			panic(fmt.Errorf("failed to create state resource %w", err))
 		}
+		kv := &json.KeyVal{Key: k, Value: value, KeyPadding: uint8(len(longestKey))}
+		resource.attributes[k] = &render.Node{Address: addr, Parent: out, Depth: out.Depth + 1, Liner: kv}
 	}
-	return &out
+	return out
 }
 
 func (m *StateResourceModel) Keys() []string {
 	return utils.KeysOrdered(m.attributes)
-}
-
-func (m *StateResourceModel) Address() string {
-	return m.resource.Address
 }
 
 func (m *StateResourceModel) resourceIndex() string {
@@ -56,17 +56,17 @@ func (m *StateResourceModel) resourceMode() string {
 	return resourceMode
 }
 
-func (m *StateResourceModel) Children() []render.Model {
-	var out []render.Model
+func (m *StateResourceModel) Children() []*render.Node {
+	var resource []*render.Node
 	keys := m.Keys()
 	for _, k := range keys {
-		out = append(out, m.attributes[k])
+		resource = append(resource, m.attributes[k])
 	}
-	return out
+	return resource
 }
 
-func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Indentation: params.Indentation, PointsTo: m}
+func (m *StateResourceModel) GenerateLines(node *render.Node) []render.Line {
+	firstLine := render.Line{Indentation: node.Depth, PointsTo: node}
 	firstLine.AddSelectable(
 		style.Type(m.resourceMode()),
 		style.Default(" "),
@@ -84,7 +84,7 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
 
 	firstLine.AddUnselectable(style.Default(" {"))
 
-	if !m.Expanded {
+	if !node.Expanded {
 		firstLine.AddUnselectable(
 			style.Preview("..."),
 			style.Default("}"),
@@ -92,22 +92,20 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
 		return []render.Line{firstLine}
 	}
 
-	var out []render.Line
-	out = append(out, firstLine)
+	var resource []render.Line
+	resource = append(resource, firstLine)
 
 	// render resource body
 	keys := m.Keys()
-	longestKey := slices.MaxFunc(keys, func(s1, s2 string) int { return len(s1) - len(s2) })
 	for _, k := range keys {
 		v := m.attributes[k]
 
-		kv := json.KeyVal{Key: k, Value: v, KeyPadding: uint8(len(longestKey))}
-		lines := kv.View(params.IndentedRight())
-		out = append(out, lines...)
+		lines := v.Lines()
+		resource = append(resource, lines...)
 	}
 
-	lastLine := render.Line{Indentation: params.Indentation, PointsTo: m, PointsToEnd: true}
+	lastLine := render.Line{Indentation: node.Depth, PointsTo: node, PointsToEnd: true}
 	lastLine.AddSelectable(style.Default("}"))
-	out = append(out, lastLine)
-	return out
+	resource = append(resource, lastLine)
+	return resource
 }

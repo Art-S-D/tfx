@@ -7,23 +7,33 @@ import (
 	"github.com/Art-S-D/tfx/internal/render"
 )
 
-func ParseValue(jsonValue any, sensitiveValues any, address string) (render.Model, error) {
+func ParseValue(jsonValue any, sensitiveValues any, parent *render.Node, address string) (*render.Node, error) {
+	out := &render.Node{
+		Address: address,
+		Parent:  parent,
+		Depth:   parent.Depth + 1,
+	}
 	if b, ok := sensitiveValues.(bool); ok && b {
-		result, err := ParseValue(jsonValue, nil, address)
-		return &SensitiveValue{value: result}, err
+		result, err := ParseValue(jsonValue, nil, out, address)
+		out.Liner = &SensitiveValue{value: result}
+		return out, err
 	}
 
 	switch value := jsonValue.(type) {
 	case string:
-		return &jsonString{render.BaseModel{Addr: address}, value}, nil
+		out.Liner = &jsonString{value}
+		return out, nil
 	case float64:
-		return &jsonNumber{render.BaseModel{Addr: address}, value}, nil
+		out.Liner = &jsonNumber{value}
+		return out, nil
 	case bool:
-		return &jsonBool{render.BaseModel{Addr: address}, value}, nil
+		out.Liner = &jsonBool{value}
+		return out, nil
 	case nil:
-		return &jsonNull{render.BaseModel{Addr: address}}, nil
+		out.Liner = &jsonNull{}
+		return out, nil
 	case []any:
-		out := jsonArray{render.BaseModel{Addr: address}, render.BaseCollapser{Expanded: false}, nil}
+		array := &jsonArray{nil}
 
 		sensitive, ok := sensitiveValues.([]any)
 		if sensitiveValues != nil && !ok {
@@ -36,15 +46,16 @@ func ParseValue(jsonValue any, sensitiveValues any, address string) (render.Mode
 			if sensitiveValues != nil {
 				nextSensitive = sensitive[i]
 			}
-			parsed, err := ParseValue(v, nextSensitive, addr)
+			parsed, err := ParseValue(v, nextSensitive, out, addr)
 			if err != nil {
 				return nil, err
 			}
-			out.value = append(out.value, parsed)
+			array.value = append(array.value, parsed)
 		}
-		return &out, nil
+		out.Liner = array
+		return out, nil
 	case map[string]any:
-		out := jsonObject{render.BaseModel{Addr: address}, render.BaseCollapser{Expanded: false}, make(map[string]render.Model)}
+		object := &jsonObject{make(map[string]*render.Node)}
 
 		sensitive, ok := sensitiveValues.(map[string]any)
 		if sensitiveValues != nil && !ok {
@@ -57,13 +68,14 @@ func ParseValue(jsonValue any, sensitiveValues any, address string) (render.Mode
 			if sensitiveValues != nil {
 				nextSensitive = sensitive[k]
 			}
-			parsed, err := ParseValue(v, nextSensitive, addr)
+			parsed, err := ParseValue(v, nextSensitive, out, addr)
 			if err != nil {
 				return nil, err
 			}
-			out.value[k] = parsed
+			object.value[k] = parsed
 		}
-		return &out, nil
+		out.Liner = object
+		return out, nil
 	default:
 		jsonType := reflect.TypeOf(jsonValue)
 		return nil, fmt.Errorf("unknown json value %v of type %v", jsonValue, jsonType)

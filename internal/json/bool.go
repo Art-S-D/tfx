@@ -8,12 +8,11 @@ import (
 )
 
 type jsonBool struct {
-	render.BaseModel
 	value bool
 }
 
-func (b *jsonBool) View(params render.ViewParams) []render.Line {
-	line := render.Line{Indentation: params.Indentation, PointsTo: b}
+func (b *jsonBool) GenerateLines(node *render.Node) []render.Line {
+	line := render.Line{Indentation: node.Depth, PointsTo: node}
 	line.AddSelectable(style.Boolean(fmt.Sprintf("%v", b.value)))
 	return []render.Line{line}
 }

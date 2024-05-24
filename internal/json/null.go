@@ -6,11 +6,10 @@ import (
 )
 
 type jsonNull struct {
-	render.BaseModel
 }
 
-func (n *jsonNull) View(params render.ViewParams) []render.Line {
-	line := render.Line{Indentation: params.Indentation, PointsTo: n}
+func (n *jsonNull) GenerateLines(node *render.Node) []render.Line {
+	line := render.Line{Indentation: node.Depth, PointsTo: node}
 	line.AddSelectable(style.Null("null"))
 	return []render.Line{line}
 }

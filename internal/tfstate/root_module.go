@@ -7,28 +7,30 @@ import (
 
 type RootModuleModel struct {
 	module  tfjson.StateModule
-	content []render.Model
+	content []*render.Node
 }
 
-func RootModuleModelFromJson(json tfjson.StateModule) *RootModuleModel {
-	result := RootModuleModel{module: json}
+func RootModuleModelFromJson(json tfjson.StateModule) *render.Node {
+	root := &RootModuleModel{module: json}
+	out := &render.Node{Liner: root}
 	for _, resource := range json.Resources {
-		result.content = append(result.content, NewStateResourceModel(resource))
+		childResource := NewStateResourceModel(resource, out)
+		root.content = append(root.content, childResource)
 	}
 	for _, module := range json.ChildModules {
-		childModule := StateModuleModelFromJson(*module)
-		result.content = append(result.content, childModule)
+		childModule := StateModuleModelFromJson(module, out)
+		root.content = append(root.content, childModule)
 	}
-	return &result
+	return out
 }
 
 func (m *RootModuleModel) Address() string          { return "" }
-func (m *RootModuleModel) Children() []render.Model { return m.content }
+func (m *RootModuleModel) Children() []*render.Node { return m.content }
 
-func (m *RootModuleModel) View(params render.ViewParams) []render.Line {
+func (m *RootModuleModel) GenerateLines(node *render.Node) []render.Line {
 	var out []render.Line
 	for _, model := range m.content {
-		childLines := model.View(params)
+		childLines := model.Lines()
 		out = append(out, childLines...)
 	}
 	return out

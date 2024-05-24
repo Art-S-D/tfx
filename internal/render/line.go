@@ -8,7 +8,7 @@ import (
 
 // a line on the screen that can be rendered with the cursor or not
 type Line struct {
-	PointsTo    Model
+	PointsTo    *Node
 	PointsToEnd bool // true if this the last line of an item, eg: }, ]
 
 	Indentation uint8

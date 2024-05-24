@@ -6,23 +6,21 @@ import (
 )
 
 type jsonArray struct {
-	render.BaseModel
-	render.BaseCollapser
-	value []render.Model
+	value []*render.Node
 }
 
-func (a *jsonArray) Children() []render.Model {
+func (a *jsonArray) Children() []*render.Node {
 	return a.value
 }
 
-func (a *jsonArray) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Indentation: params.Indentation, PointsTo: a}
+func (a *jsonArray) GenerateLines(node *render.Node) []render.Line {
+	firstLine := render.Line{Indentation: node.Depth, PointsTo: node}
 
 	if len(a.value) == 0 {
 		firstLine.AddSelectable(style.Default("[]"))
 		return []render.Line{firstLine}
 	}
-	if !a.Expanded {
+	if !node.Expanded {
 		firstLine.AddSelectable(style.Default("["))
 		firstLine.AddSelectable(style.Preview("..."))
 		firstLine.AddSelectable(style.Default("]"))
@@ -32,11 +30,11 @@ func (a *jsonArray) View(params render.ViewParams) []render.Line {
 		out := []render.Line{firstLine}
 
 		for _, v := range a.value {
-			lines := v.View(params.IndentedRight())
+			lines := v.Lines()
 			out = append(out, lines...)
 		}
 
-		lastLine := render.Line{Indentation: params.Indentation, PointsTo: a, PointsToEnd: true}
+		lastLine := render.Line{Indentation: node.Depth, PointsTo: node, PointsToEnd: true}
 		lastLine.AddSelectable(style.Default("]"))
 		out = append(out, lastLine)
 		return out

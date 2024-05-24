@@ -8,12 +8,11 @@ import (
 )
 
 type jsonNumber struct {
-	render.BaseModel
 	value float64
 }
 
-func (n *jsonNumber) View(params render.ViewParams) []render.Line {
-	line := render.Line{Indentation: params.Indentation, PointsTo: n}
+func (n *jsonNumber) GenerateLines(node *render.Node) []render.Line {
+	line := render.Line{Indentation: node.Depth, PointsTo: node}
 	v := fmt.Sprintf("%.2f", n.value)
 	line.AddSelectable(style.Number(v))
 	return []render.Line{line}

@@ -7,14 +7,16 @@ import (
 	"github.com/Art-S-D/tfx/internal/render"
 )
 
-func (m *stateModel) Selected() render.Model {
-	currentLine := m.screen[m.cursor]
+func (m *stateModel) Screen() []render.Line { return m.rootNode.Lines() }
+
+func (m *stateModel) Selected() *render.Node {
+	currentLine := m.Screen()[m.cursor]
 	return currentLine.PointsTo
 }
 
 func (m *stateModel) previewLine() string {
 	selection := m.Selected()
-	selectionName := selection.Address()
+	selectionName := selection.Address
 
 	helpText := "[?]help [q]quit "
 	var previewLine string
@@ -36,7 +38,8 @@ func (m *stateModel) View() string {
 		return ""
 	}
 
-	screenSlice := m.screen[m.screenStart : m.screenStart+m.screenHeight-1]
+	screen := m.rootNode.Lines()
+	screenSlice := screen[m.screenStart : m.screenStart+m.screenHeight-1]
 	var sb strings.Builder
 	for i, line := range screenSlice {
 		sb.WriteString(line.Render(m.theme, i+m.screenStart == m.cursor))

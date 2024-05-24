@@ -8,12 +8,11 @@ import (
 )
 
 type jsonString struct {
-	render.BaseModel
 	value string
 }
 
-func (s *jsonString) View(params render.ViewParams) []render.Line {
-	line := render.Line{Indentation: params.Indentation, PointsTo: s}
+func (s *jsonString) GenerateLines(node *render.Node) []render.Line {
+	line := render.Line{Indentation: node.Depth, PointsTo: node}
 	v := fmt.Sprintf("\"%s\"", s.value)
 	line.AddSelectable(style.String(v))
 	return []render.Line{line}

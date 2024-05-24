@@ -1,25 +1,21 @@
 package json
 
 import (
-	"slices"
-
 	"github.com/Art-S-D/tfx/internal/render"
 	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/utils"
 )
 
 type jsonObject struct {
-	render.BaseModel
-	render.BaseCollapser
-	value map[string]render.Model
+	value map[string]*render.Node
 }
 
 func (o *jsonObject) Keys() []string {
 	return utils.KeysOrdered(o.value)
 }
 
-func (b *jsonObject) Children() []render.Model {
-	var out []render.Model
+func (b *jsonObject) Children() []*render.Node {
+	var out []*render.Node
 	keys := b.Keys()
 	for _, k := range keys {
 		out = append(out, b.value[k])
@@ -27,13 +23,13 @@ func (b *jsonObject) Children() []render.Model {
 	return out
 }
 
-func (o *jsonObject) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Indentation: params.Indentation, PointsTo: o}
+func (o *jsonObject) GenerateLines(node *render.Node) []render.Line {
+	firstLine := render.Line{Indentation: node.Depth, PointsTo: node}
 
 	if len(o.value) == 0 {
 		firstLine.AddSelectable(style.Default("{}"))
 		return []render.Line{firstLine}
-	} else if !o.Expanded {
+	} else if !node.Expanded {
 		firstLine.AddSelectable(style.Default("{"))
 		firstLine.AddSelectable(style.Preview("..."))
 		firstLine.AddSelectable(style.Default("}"))
@@ -43,15 +39,12 @@ func (o *jsonObject) View(params render.ViewParams) []render.Line {
 		out := []render.Line{firstLine}
 
 		keys := o.Keys()
-		longestKey := slices.MaxFunc(keys, func(s1, s2 string) int { return len(s1) - len(s2) })
 		for _, k := range keys {
 			v := o.value[k]
-
-			kv := KeyVal{Key: k, Value: v, KeyPadding: uint8(len(longestKey))}
-			lines := kv.View(params.IndentedRight())
+			lines := v.Lines()
 			out = append(out, lines...)
 		}
-		lastLine := render.Line{Indentation: params.Indentation, PointsTo: o, PointsToEnd: true}
+		lastLine := render.Line{Indentation: node.Depth, PointsTo: node, PointsToEnd: true}
 		lastLine.AddSelectable(style.Default("}"))
 		out = append(out, lastLine)
 		return out
