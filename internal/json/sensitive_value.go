@@ -30,12 +30,12 @@ func (v *SensitiveValue) Children() []render.Model {
 	}
 }
 
-func (v *SensitiveValue) View(params render.ViewParams) []render.Line {
+func (v *SensitiveValue) View() []render.Line {
 	if !v.shown {
-		line := render.Line{Indentation: params.Indentation, PointsTo: v}
+		line := render.Line{PointsTo: v}
 		line.AddSelectable(style.Preview("(sensitive)"))
 		return []render.Line{line}
 	} else {
-		return v.value.View(params)
+		return v.value.View()
 	}
 }

@@ -15,8 +15,8 @@ func (a *jsonArray) Children() []render.Model {
 	return a.value
 }
 
-func (a *jsonArray) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Indentation: params.Indentation, PointsTo: a}
+func (a *jsonArray) View() []render.Line {
+	firstLine := render.Line{PointsTo: a}
 
 	if len(a.value) == 0 {
 		firstLine.AddSelectable(style.Default("[]"))
@@ -32,11 +32,12 @@ func (a *jsonArray) View(params render.ViewParams) []render.Line {
 		out := []render.Line{firstLine}
 
 		for _, v := range a.value {
-			lines := v.View(params.IndentedRight())
+			lines := v.View()
+			render.Indent(lines)
 			out = append(out, lines...)
 		}
 
-		lastLine := render.Line{Indentation: params.Indentation, PointsTo: a, PointsToEnd: true}
+		lastLine := render.Line{PointsTo: a, PointsToEnd: true}
 		lastLine.AddSelectable(style.Default("]"))
 		out = append(out, lastLine)
 		return out

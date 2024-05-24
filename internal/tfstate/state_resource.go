@@ -65,8 +65,8 @@ func (m *StateResourceModel) Children() []render.Model {
 	return out
 }
 
-func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Indentation: params.Indentation, PointsTo: m}
+func (m *StateResourceModel) View() []render.Line {
+	firstLine := render.Line{PointsTo: m}
 	firstLine.AddSelectable(
 		style.Type(m.resourceMode()),
 		style.Default(" "),
@@ -102,11 +102,12 @@ func (m *StateResourceModel) View(params render.ViewParams) []render.Line {
 		v := m.attributes[k]
 
 		kv := json.KeyVal{Key: k, Value: v, KeyPadding: uint8(len(longestKey))}
-		lines := kv.View(params.IndentedRight())
+		lines := kv.View()
+		render.Indent(lines)
 		out = append(out, lines...)
 	}
 
-	lastLine := render.Line{Indentation: params.Indentation, PointsTo: m, PointsToEnd: true}
+	lastLine := render.Line{PointsTo: m, PointsToEnd: true}
 	lastLine.AddSelectable(style.Default("}"))
 	out = append(out, lastLine)
 	return out

@@ -27,8 +27,8 @@ func (b *jsonObject) Children() []render.Model {
 	return out
 }
 
-func (o *jsonObject) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Indentation: params.Indentation, PointsTo: o}
+func (o *jsonObject) View() []render.Line {
+	firstLine := render.Line{PointsTo: o}
 
 	if len(o.value) == 0 {
 		firstLine.AddSelectable(style.Default("{}"))
@@ -48,10 +48,11 @@ func (o *jsonObject) View(params render.ViewParams) []render.Line {
 			v := o.value[k]
 
 			kv := KeyVal{Key: k, Value: v, KeyPadding: uint8(len(longestKey))}
-			lines := kv.View(params.IndentedRight())
+			lines := kv.View()
+			render.Indent(lines)
 			out = append(out, lines...)
 		}
-		lastLine := render.Line{Indentation: params.Indentation, PointsTo: o, PointsToEnd: true}
+		lastLine := render.Line{PointsTo: o, PointsToEnd: true}
 		lastLine.AddSelectable(style.Default("}"))
 		out = append(out, lastLine)
 		return out

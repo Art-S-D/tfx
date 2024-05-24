@@ -25,10 +25,10 @@ func RootModuleModelFromJson(json tfjson.StateModule) *RootModuleModel {
 func (m *RootModuleModel) Address() string          { return "" }
 func (m *RootModuleModel) Children() []render.Model { return m.content }
 
-func (m *RootModuleModel) View(params render.ViewParams) []render.Line {
+func (m *RootModuleModel) View() []render.Line {
 	var out []render.Line
 	for _, model := range m.content {
-		childLines := model.View(params)
+		childLines := model.View()
 		out = append(out, childLines...)
 	}
 	return out

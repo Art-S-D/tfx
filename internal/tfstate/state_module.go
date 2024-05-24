@@ -34,9 +34,9 @@ func (m *StateModuleModel) Children() []render.Model {
 	return m.content
 }
 
-func (m *StateModuleModel) View(params render.ViewParams) []render.Line {
+func (m *StateModuleModel) View() []render.Line {
 
-	firstLine := render.Line{Indentation: params.Indentation, PointsTo: m}
+	firstLine := render.Line{PointsTo: m}
 	firstLine.AddSelectable(
 		style.Type("module"),
 		style.Default(" "),
@@ -56,11 +56,12 @@ func (m *StateModuleModel) View(params render.ViewParams) []render.Line {
 	out = append(out, firstLine)
 
 	for _, model := range m.content {
-		lines := model.View(params.IndentedRight())
+		lines := model.View()
+		render.Indent(lines)
 		out = append(out, lines...)
 	}
 
-	lastLine := render.Line{Indentation: params.Indentation, PointsTo: m, PointsToEnd: true}
+	lastLine := render.Line{PointsTo: m, PointsToEnd: true}
 	lastLine.AddSelectable(style.Default("}"))
 	out = append(out, lastLine)
 	return out

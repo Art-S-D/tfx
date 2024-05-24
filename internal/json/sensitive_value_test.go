@@ -19,11 +19,10 @@ func linesToString(lines []render.Line) string {
 func TestSensitiveValue(t *testing.T) {
 	t.Run("Reveal", func(t *testing.T) {
 		value := SensitiveValue{value: &jsonNull{}}
-		params := render.ViewParams{ScreenWidth: 100, ScreenHeight: 100}
 
-		reprBeforeReveal := linesToString(value.View(params))
+		reprBeforeReveal := linesToString(value.View())
 		value.Reveal()
-		reprAfterReveal := linesToString(value.View(params))
+		reprAfterReveal := linesToString(value.View())
 
 		if !strings.Contains(reprBeforeReveal, "(sensitive)") {
 			t.Errorf(

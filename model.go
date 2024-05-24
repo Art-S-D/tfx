@@ -18,21 +18,8 @@ type stateModel struct {
 	theme *style.Theme
 }
 
-func (m *stateModel) ViewParams() render.ViewParams {
-	return render.ViewParams{
-		CurrentLine:              0,
-		Indentation:              0,
-		SkipCursorForCurrentLine: false,
-
-		Cursor:       m.cursor,
-		ScreenStart:  m.screenStart,
-		ScreenWidth:  m.screenWidth,
-		ScreenHeight: m.screenHeight - 1,
-	}
-}
-
 func (m *stateModel) RefreshScreen() {
-	m.screen = m.rootModule.View(m.ViewParams())
+	m.screen = m.rootModule.View()
 }
 func (m *stateModel) Init() tea.Cmd {
 	m.RefreshScreen()

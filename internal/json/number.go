@@ -12,8 +12,8 @@ type jsonNumber struct {
 	value float64
 }
 
-func (n *jsonNumber) View(params render.ViewParams) []render.Line {
-	line := render.Line{Indentation: params.Indentation, PointsTo: n}
+func (n *jsonNumber) View() []render.Line {
+	line := render.Line{PointsTo: n}
 	v := fmt.Sprintf("%.2f", n.value)
 	line.AddSelectable(style.Number(v))
 	return []render.Line{line}

@@ -35,15 +35,15 @@ func (k *KeyVal) Children() []render.Model {
 	return []render.Model{}
 }
 
-func (k *KeyVal) View(params render.ViewParams) []render.Line {
-	firstLine := render.Line{Indentation: params.Indentation, PointsTo: k}
+func (k *KeyVal) View() []render.Line {
+	firstLine := render.Line{PointsTo: k}
 	firstLine.AddSelectable(style.Key(k.Key))
 	firstLine.AddUnselectable(
 		style.Default(strings.Repeat(" ", int(k.KeyPadding)-len(k.Key))),
 		style.Default(" = "),
 	)
 
-	valueLines := k.Value.View(params)
+	valueLines := k.Value.View()
 	valueLines[0] = *firstLine.MergeWith(&valueLines[0])
 
 	if len(valueLines) > 1 {

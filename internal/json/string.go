@@ -12,8 +12,8 @@ type jsonString struct {
 	value string
 }
 
-func (s *jsonString) View(params render.ViewParams) []render.Line {
-	line := render.Line{Indentation: params.Indentation, PointsTo: s}
+func (s *jsonString) View() []render.Line {
+	line := render.Line{PointsTo: s}
 	v := fmt.Sprintf("\"%s\"", s.value)
 	line.AddSelectable(style.String(v))
 	return []render.Line{line}
