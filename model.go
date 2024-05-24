@@ -7,6 +7,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type modelState int
+
+const (
+	viewState = modelState(iota)
+	showHelp
+)
+
 type stateModel struct {
 	screenWidth, screenHeight int
 	cursor                    int
@@ -14,6 +21,8 @@ type stateModel struct {
 
 	rootModule *tfstate.RootModuleModel
 	screen     []render.Line
+
+	state modelState
 
 	theme *style.Theme
 }

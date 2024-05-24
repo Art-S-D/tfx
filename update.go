@@ -71,7 +71,18 @@ func (m *stateModel) goToBottom() {
 // 	m.clampCursor()
 // }
 
-func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *stateModel) updateHelpView(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "?", "q":
+			m.state = viewState
+		}
+	}
+	return m, nil
+}
+
+func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -83,6 +94,8 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursorDown()
 		case "g", "G":
 			m.goToBottom()
+		case "?":
+			m.state = showHelp
 		case "enter":
 			selected := m.Selected()
 			if collapser, ok := selected.(render.Collapser); ok {
@@ -123,4 +136,14 @@ func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.clampScreen()
 	}
 	return m, nil
+}
+
+func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch m.state {
+	case showHelp:
+		return m.updateHelpView(msg)
+	case viewState:
+		return m.updateStateView(msg)
+	}
+	panic("unknown state")
 }

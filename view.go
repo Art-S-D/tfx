@@ -32,6 +32,16 @@ func (m *stateModel) previewLine() string {
 }
 
 func (m *stateModel) View() string {
+	switch m.state {
+	case showHelp:
+		return m.helpScreen()
+	case viewState:
+		return m.viewState()
+	}
+	panic("unknown state")
+}
+
+func (m *stateModel) viewState() string {
 	if m.screenHeight == 0 {
 		return ""
 	}
