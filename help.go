@@ -27,6 +27,7 @@ var helpText string = `
         1-9                 collapse to nth level
         J, shift+down       next sibling
         K, shift+up         previous sibling
+        r                   reveal value
         z                   toggle string wrap
         y                   yank/copy
         /                   search regexp

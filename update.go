@@ -1,6 +1,8 @@
 package main
 
 import (
+	"slices"
+
 	"github.com/Art-S-D/tfx/internal/json"
 	"github.com/Art-S-D/tfx/internal/render"
 	tea "github.com/charmbracelet/bubbletea"
@@ -22,8 +24,8 @@ func (m *stateModel) clampScreen() {
 	minScreen := 0
 	maxScreen := m.ScreenHeight() - m.screenHeight + 1
 
-	m.screenStart = min(m.screenStart, minScreen)
-	m.screenStart = max(m.screenStart, maxScreen) // this is important when collapsing a node at the bottom of the screen
+	m.screenStart = max(m.screenStart, minScreen)
+	m.screenStart = min(m.screenStart, maxScreen) // this is important when collapsing a node at the bottom of the screen
 
 	// cursor is above the screen
 	if m.screenStart > m.cursor {
@@ -82,6 +84,16 @@ func (m *stateModel) updateHelpView(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// replace the `previousHeight`th lines under the cursor by the View of `by`
+// while keeping the previous indentation
+// this allows swapping the previous content of a Model by the new content
+func (m *stateModel) replaceAtCursor(by render.Model, previousHeight int) {
+	indentation := m.screen[m.cursor].Indentation
+	nextLines := by.View()
+	render.IndentBy(nextLines, indentation)
+	m.screen = slices.Replace(m.screen, m.cursor, m.cursor+previousHeight, nextLines...)
+}
+
 func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -99,8 +111,9 @@ func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			selected := m.Selected()
 			if collapser, ok := selected.(render.Collapser); ok {
+				previousHeight := len(selected.View())
 				collapser.Expand()
-				m.refreshScreen()
+				m.replaceAtCursor(selected, previousHeight)
 
 				m.clampCursor()
 				m.clampScreen()
@@ -113,7 +126,7 @@ func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.cursor -= len(previousLines) - 1
 				}
 				collapser.Collapse()
-				m.refreshScreen()
+				m.replaceAtCursor(selected, len(previousLines))
 
 				m.clampCursor()
 				m.clampScreen()
@@ -121,8 +134,9 @@ func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "r":
 			selected := m.Selected()
 			if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
+				height := len(selected.View())
 				sensitiveValue.Reveal()
-				m.refreshScreen()
+				m.replaceAtCursor(selected, height)
 
 				m.clampCursor()
 				m.clampScreen()

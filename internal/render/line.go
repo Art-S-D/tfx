@@ -9,8 +9,12 @@ import (
 const INDENT_WIDTH = 2
 
 func Indent(lines []Line) {
+	IndentBy(lines, 1)
+}
+
+func IndentBy(lines []Line, by uint8) {
 	for i := range lines {
-		lines[i].Indentation += 1
+		lines[i].Indentation += by
 	}
 }
 
