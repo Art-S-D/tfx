@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (m *stateModel) Selected() render.Model {
@@ -46,15 +47,17 @@ func (m *stateModel) viewState() string {
 		return ""
 	}
 
-	screen := m.rootModule.View()
-	screenSlice := screen[m.screenStart : m.screenStart+m.screenHeight-1]
+	screenLines := m.rootModule.View()
+	screenBottom := min(m.screenStart+m.screenHeight-1, m.EntireHeight())
+	screenSlice := screenLines[m.screenStart:screenBottom]
 	var sb strings.Builder
 	for i, line := range screenSlice {
 		sb.WriteString(line.Render(m.theme, i+m.screenStart == m.cursor))
-		sb.WriteRune('\n')
+		if i < len(screenSlice)-1 {
+			sb.WriteRune('\n')
+		}
 	}
-	sb.WriteString(m.previewLine())
-	// screen := lipgloss.PlaceVertical(m.screenHeight-1, lipgloss.Top, screen)
 
-	return sb.String()
+	screen := lipgloss.PlaceVertical(m.screenHeight-1, lipgloss.Top, sb.String())
+	return fmt.Sprintf("%s\n%s", screen, m.previewLine())
 }

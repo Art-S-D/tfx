@@ -13,7 +13,7 @@ import (
 // 	return m.screenHeight + m.screenStart - 2
 // }
 
-func (m *stateModel) ScreenHeight() int {
+func (m *stateModel) EntireHeight() int {
 	return len(m.screen)
 }
 
@@ -22,19 +22,20 @@ func (m *stateModel) ScreenHeight() int {
 // basically the cursor does what it wants and the screen follows it
 func (m *stateModel) clampScreen() {
 	minScreen := 0
-	maxScreen := m.ScreenHeight() - m.screenHeight + 1
+	maxScreen := max(0, m.EntireHeight()-m.screenHeight+1)
 
 	m.screenStart = max(m.screenStart, minScreen)
 	m.screenStart = min(m.screenStart, maxScreen) // this is important when collapsing a node at the bottom of the screen
 
 	// cursor is above the screen
-	if m.screenStart > m.cursor {
+	if m.cursor < m.screenStart {
 		m.screenStart = max(minScreen, m.cursor)
 	}
 
 	// cursor is below the screen
-	// +2 because we need one for the preview line and one so that the cursor is one line on top of the bottom of the screen
-	if m.screenStart < m.cursor-m.screenHeight+2 {
+	// -2 because we need one for the preview line and one so that the cursor is one line on top of the bottom of the screen
+	screenBottom := m.screenStart + m.screenHeight - 2
+	if m.cursor >= screenBottom {
 		m.screenStart = min(maxScreen, m.cursor-m.screenHeight+2)
 	}
 }
@@ -44,8 +45,8 @@ func (m *stateModel) clampCursor() {
 	if m.cursor < 0 {
 		m.cursor = 0
 	}
-	if m.cursor > m.ScreenHeight()-1 {
-		m.cursor = m.ScreenHeight() - 1
+	if m.cursor > m.EntireHeight()-1 {
+		m.cursor = m.EntireHeight() - 1
 	}
 }
 
@@ -62,7 +63,7 @@ func (m *stateModel) cursorDown() {
 }
 
 func (m *stateModel) goToBottom() {
-	m.cursor = m.ScreenHeight() - 1
+	m.cursor = m.EntireHeight() - 1
 	m.clampScreen()
 }
 
