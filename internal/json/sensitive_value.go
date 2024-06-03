@@ -47,6 +47,15 @@ func (v *SensitiveValue) Collapse() {
 		exp.Collapse()
 	}
 }
+func (v *SensitiveValue) IsCollapsed() bool {
+	if !v.shown {
+		return true
+	}
+	if exp, ok := v.value.(render.Collapser); ok {
+		return exp.IsCollapsed()
+	}
+	return true
+}
 
 func (v *SensitiveValue) View() []render.Line {
 	if !v.shown {

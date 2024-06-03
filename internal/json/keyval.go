@@ -27,6 +27,12 @@ func (k *KeyVal) Collapse() {
 		expand.Collapse()
 	}
 }
+func (k *KeyVal) IsCollapsed() bool {
+	if expand, ok := k.Value.(render.Collapser); ok {
+		return expand.IsCollapsed()
+	}
+	return true
+}
 
 func (k *KeyVal) Children() []render.Model {
 	if child, ok := k.Value.(render.Childrener); ok {

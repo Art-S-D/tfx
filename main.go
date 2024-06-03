@@ -44,6 +44,7 @@ func main() {
 	p := tea.NewProgram(
 		&terraformState,
 		tea.WithAltScreen(),
+		tea.WithMouseCellMotion(),
 	)
 	if _, err := p.Run(); err != nil {
 		panic(err.Error())

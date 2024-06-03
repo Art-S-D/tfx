@@ -104,6 +104,43 @@ func (m *stateModel) replaceAtCursor(by render.Model, previousHeight int) {
 	m.screen = slices.Replace(m.screen, m.cursor, m.cursor+previousHeight, nextLines...)
 }
 
+func (m *stateModel) expandAtSelection() {
+	selected := m.Selected()
+	if collapser, ok := selected.(render.Collapser); ok {
+		previousHeight := len(selected.View())
+		collapser.Expand()
+		m.replaceAtCursor(selected, previousHeight)
+
+		m.clampCursor()
+		m.clampScreen()
+	}
+}
+func (m *stateModel) collapseAtSelection() {
+	selected := m.Selected()
+	if collapser, ok := selected.(render.Collapser); ok {
+		previousLines := selected.View()
+		if m.screen[m.cursor].PointsToEnd {
+			m.cursor -= len(previousLines) - 1
+		}
+		collapser.Collapse()
+		m.replaceAtCursor(selected, len(previousLines))
+
+		m.clampCursor()
+		m.clampScreen()
+	}
+}
+func (m *stateModel) revealAtSelection() {
+	selected := m.Selected()
+	if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
+		m.revealSensitiveValue(selected, sensitiveValue)
+	}
+	if kv, ok := selected.(*json.KeyVal); ok {
+		if sensitiveValue, ok := kv.Value.(*json.SensitiveValue); ok {
+			m.revealSensitiveValue(selected, sensitiveValue)
+		}
+	}
+}
+
 func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -119,38 +156,11 @@ func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "?":
 			m.state = showHelp
 		case "enter":
-			selected := m.Selected()
-			if collapser, ok := selected.(render.Collapser); ok {
-				previousHeight := len(selected.View())
-				collapser.Expand()
-				m.replaceAtCursor(selected, previousHeight)
-
-				m.clampCursor()
-				m.clampScreen()
-			}
+			m.expandAtSelection()
 		case "backspace":
-			selected := m.Selected()
-			if collapser, ok := selected.(render.Collapser); ok {
-				previousLines := selected.View()
-				if m.screen[m.cursor].PointsToEnd {
-					m.cursor -= len(previousLines) - 1
-				}
-				collapser.Collapse()
-				m.replaceAtCursor(selected, len(previousLines))
-
-				m.clampCursor()
-				m.clampScreen()
-			}
+			m.collapseAtSelection()
 		case "r":
-			selected := m.Selected()
-			if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
-				m.revealSensitiveValue(selected, sensitiveValue)
-			}
-			if kv, ok := selected.(*json.KeyVal); ok {
-				if sensitiveValue, ok := kv.Value.(*json.SensitiveValue); ok {
-					m.revealSensitiveValue(selected, sensitiveValue)
-				}
-			}
+			m.revealAtSelection()
 		}
 	case tea.WindowSizeMsg:
 		m.screenHeight = msg.Height
@@ -158,6 +168,34 @@ func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.clampCursor()
 		m.clampScreen()
+	case tea.MouseMsg:
+		if msg.Action == tea.MouseActionPress {
+			if msg.Button == tea.MouseButtonWheelDown {
+				m.cursorDown()
+				m.clampCursor()
+				m.clampScreen()
+			}
+			if msg.Button == tea.MouseButtonWheelUp {
+				m.cursorUp()
+				m.clampCursor()
+				m.clampScreen()
+			}
+			if msg.Button == tea.MouseButtonLeft {
+				destinationRow := m.screenStart + msg.Y
+				if m.cursor == destinationRow {
+					// if the row is already selected, expand/collapse it
+					if collapser, ok := m.Selected().(render.Collapser); ok {
+						if collapser.IsCollapsed() {
+							m.expandAtSelection()
+						} else {
+							m.collapseAtSelection()
+						}
+					}
+				} else {
+					m.cursor = destinationRow
+				}
+			}
+		}
 	}
 	return m, nil
 }
