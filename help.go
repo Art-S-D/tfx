@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -46,4 +47,15 @@ func (m *stateModel) helpScreen() string {
 	lastLine = m.theme.Selection(lastLine).String()
 
 	return fmt.Sprintf("%s\n%s", help, lastLine)
+}
+
+func (m *stateModel) updateHelpView(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "?", "q":
+			m.state = viewState
+		}
+	}
+	return m, nil
 }

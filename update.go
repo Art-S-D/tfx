@@ -17,27 +17,12 @@ func (m *stateModel) EntireHeight() int {
 	return len(m.screen)
 }
 
-// moves the screen so that the cursor is in view
-// used when the ui jumps around, ex: when a big element is collapsed
-// basically the cursor does what it wants and the screen follows it
 func (m *stateModel) clampScreen() {
-	minScreen := 0
-	maxScreen := max(0, m.EntireHeight()-m.screenHeight+1)
-
-	m.screenStart = max(m.screenStart, minScreen)
-	m.screenStart = min(m.screenStart, maxScreen) // this is important when collapsing a node at the bottom of the screen
-
-	// cursor is above the screen
-	if m.cursor < m.screenStart {
-		m.screenStart = max(minScreen, m.cursor)
-	}
-
-	// cursor is below the screen
-	// -2 because we need one for the preview line and one so that the cursor is one line on top of the bottom of the screen
-	screenBottom := m.screenStart + m.screenHeight - 2
-	if m.cursor >= screenBottom {
-		m.screenStart = min(maxScreen, m.cursor-m.screenHeight+2)
-	}
+	// can be negative but this will be fixed by max(0, m.screenStart)
+	// this is important when collapsing a node at the bottom of the screen
+	lowestPossibleScreen := m.EntireHeight() - m.screenHeight + 1
+	m.screenStart = min(lowestPossibleScreen, m.screenStart)
+	m.screenStart = max(0, m.screenStart)
 }
 
 // moves the cursor so that it does not go out of the state
@@ -50,40 +35,49 @@ func (m *stateModel) clampCursor() {
 	}
 }
 
+// moves the screen so that the cursor is in view
+// used when the ui jumps around, ex: when a big element is collapsed
+// basically the cursor does what it wants and the screen follows it
+func (m *stateModel) moveScreenToCursor() {
+	m.clampScreen()
+
+	// cursor is above the screen
+	if m.cursor < m.screenStart {
+		m.screenStart = max(0, m.cursor)
+	}
+
+	// cursor is below the screen
+	// -2 because we need one for the preview line and one so that the cursor is one line on top of the bottom of the screen
+	screenBottom := m.screenStart + m.screenHeight - 2
+	maxScreen := max(0, m.EntireHeight()-m.screenHeight+1)
+	if m.cursor >= screenBottom {
+		m.screenStart = min(maxScreen, m.cursor-m.screenHeight+2)
+	}
+}
+
 func (m *stateModel) cursorUp() {
 	m.cursor -= 1
 	m.clampCursor()
-	m.clampScreen()
+	m.moveScreenToCursor()
 }
 
 func (m *stateModel) cursorDown() {
 	m.cursor += 1
 	m.clampCursor()
-	m.clampScreen()
+	m.moveScreenToCursor()
 }
 
 func (m *stateModel) goToBottom() {
 	m.cursor = m.EntireHeight() - 1
-	m.clampScreen()
+	m.moveScreenToCursor()
 }
 
 // func (m *stateModel) pageDown() {
 // 	m.screenStart += m.screenHeight
 // 	m.cursor = m.screenStart
-// 	m.clampScreenStart()
+// 	m.moveScreenToCursorStart()
 // 	m.clampCursor()
 // }
-
-func (m *stateModel) updateHelpView(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "?", "q":
-			m.state = viewState
-		}
-	}
-	return m, nil
-}
 
 func (m *stateModel) revealSensitiveValue(model render.Model, value *json.SensitiveValue) {
 	height := len(value.View())
@@ -91,7 +85,7 @@ func (m *stateModel) revealSensitiveValue(model render.Model, value *json.Sensit
 	m.replaceAtCursor(model, height)
 
 	m.clampCursor()
-	m.clampScreen()
+	m.moveScreenToCursor()
 }
 
 // replace the `previousHeight`th lines under the cursor by the View of `by`
@@ -112,7 +106,7 @@ func (m *stateModel) expandAtSelection() {
 		m.replaceAtCursor(selected, previousHeight)
 
 		m.clampCursor()
-		m.clampScreen()
+		m.moveScreenToCursor()
 	}
 }
 func (m *stateModel) collapseAtSelection() {
@@ -126,7 +120,7 @@ func (m *stateModel) collapseAtSelection() {
 		m.replaceAtCursor(selected, len(previousLines))
 
 		m.clampCursor()
-		m.clampScreen()
+		m.moveScreenToCursor()
 	}
 }
 func (m *stateModel) revealAtSelection() {
@@ -167,17 +161,15 @@ func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.screenWidth = msg.Width
 
 		m.clampCursor()
-		m.clampScreen()
+		m.moveScreenToCursor()
 	case tea.MouseMsg:
 		if msg.Action == tea.MouseActionPress {
 			if msg.Button == tea.MouseButtonWheelDown {
-				m.cursorDown()
-				m.clampCursor()
+				m.screenStart += 1
 				m.clampScreen()
 			}
 			if msg.Button == tea.MouseButtonWheelUp {
-				m.cursorUp()
-				m.clampCursor()
+				m.screenStart -= 1
 				m.clampScreen()
 			}
 			if msg.Button == tea.MouseButtonLeft {
