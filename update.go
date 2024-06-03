@@ -85,6 +85,15 @@ func (m *stateModel) updateHelpView(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m *stateModel) revealSensitiveValue(model render.Model, value *json.SensitiveValue) {
+	height := len(value.View())
+	value.Reveal()
+	m.replaceAtCursor(model, height)
+
+	m.clampCursor()
+	m.clampScreen()
+}
+
 // replace the `previousHeight`th lines under the cursor by the View of `by`
 // while keeping the previous indentation
 // this allows swapping the previous content of a Model by the new content
@@ -135,12 +144,12 @@ func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "r":
 			selected := m.Selected()
 			if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
-				height := len(selected.View())
-				sensitiveValue.Reveal()
-				m.replaceAtCursor(selected, height)
-
-				m.clampCursor()
-				m.clampScreen()
+				m.revealSensitiveValue(selected, sensitiveValue)
+			}
+			if kv, ok := selected.(*json.KeyVal); ok {
+				if sensitiveValue, ok := kv.Value.(*json.SensitiveValue); ok {
+					m.revealSensitiveValue(selected, sensitiveValue)
+				}
 			}
 		}
 	case tea.WindowSizeMsg:

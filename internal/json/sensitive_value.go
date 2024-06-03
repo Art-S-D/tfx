@@ -29,6 +29,25 @@ func (v *SensitiveValue) Children() []render.Model {
 	}
 }
 
+func (v *SensitiveValue) Expand() {
+	if !v.shown {
+		return
+	}
+
+	if exp, ok := v.value.(render.Collapser); ok {
+		exp.Expand()
+	}
+}
+func (v *SensitiveValue) Collapse() {
+	if !v.shown {
+		return
+	}
+
+	if exp, ok := v.value.(render.Collapser); ok {
+		exp.Collapse()
+	}
+}
+
 func (v *SensitiveValue) View() []render.Line {
 	if !v.shown {
 		line := render.Line{PointsTo: v}
