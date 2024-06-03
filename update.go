@@ -163,31 +163,7 @@ func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.clampCursor()
 		m.moveScreenToCursor()
 	case tea.MouseMsg:
-		if msg.Action == tea.MouseActionPress {
-			if msg.Button == tea.MouseButtonWheelDown {
-				m.screenStart += 1
-				m.clampScreen()
-			}
-			if msg.Button == tea.MouseButtonWheelUp {
-				m.screenStart -= 1
-				m.clampScreen()
-			}
-			if msg.Button == tea.MouseButtonLeft {
-				destinationRow := m.screenStart + msg.Y
-				if m.cursor == destinationRow {
-					// if the row is already selected, expand/collapse it
-					if collapser, ok := m.Selected().(render.Collapser); ok {
-						if collapser.IsCollapsed() {
-							m.expandAtSelection()
-						} else {
-							m.collapseAtSelection()
-						}
-					}
-				} else {
-					m.cursor = destinationRow
-				}
-			}
-		}
+		m.handleMouseEvent(msg)
 	}
 	return m, nil
 }
