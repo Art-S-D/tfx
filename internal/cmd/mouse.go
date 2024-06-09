@@ -1,17 +1,15 @@
 package cmd
 
 import (
-	"github.com/Art-S-D/tfx/internal/render"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m *TfxModel) flipExpandedAtCursor() {
-	if collapser, ok := m.Selected().(render.Collapser); ok {
-		if collapser.IsCollapsed() {
-			m.expandAtSelection()
-		} else {
-			m.collapseAtSelection()
-		}
+	selected := m.Selected()
+	if selected.IsCollapsed() {
+		m.expandAtSelection()
+	} else {
+		m.collapseAtSelection()
 	}
 }
 func (m *TfxModel) handleMouseEvent(msg tea.MouseMsg) {

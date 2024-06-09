@@ -25,7 +25,10 @@ func ParseValue(jsonValue any, sensitiveValues any, address string) (render.Mode
 	case nil:
 		return &jsonNull{render.BaseModel{Addr: address}}, nil
 	case []any:
-		array := &jsonArray{render.BaseModel{Addr: address}, render.BaseCollapser{Expanded: false}, nil}
+		array := &jsonArray{
+			render.BaseModel{Addr: address, Expanded: false},
+			nil,
+		}
 
 		sensitive, ok := sensitiveValues.([]any)
 		if sensitiveValues != nil && !ok {
@@ -46,7 +49,10 @@ func ParseValue(jsonValue any, sensitiveValues any, address string) (render.Mode
 		}
 		return array, nil
 	case map[string]any:
-		object := &jsonObject{render.BaseModel{Addr: address}, render.BaseCollapser{Expanded: false}, make(map[string]render.Model)}
+		object := &jsonObject{
+			render.BaseModel{Addr: address, Expanded: false},
+			make(map[string]render.Model),
+		}
 
 		sensitive, ok := sensitiveValues.(map[string]any)
 		if sensitiveValues != nil && !ok {

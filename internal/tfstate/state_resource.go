@@ -13,7 +13,7 @@ import (
 )
 
 type StateResourceModel struct {
-	render.BaseCollapser
+	render.BaseModel
 	resource   *tfjson.StateResource
 	attributes map[string]render.Model
 }

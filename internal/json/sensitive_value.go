@@ -22,39 +22,26 @@ func (s *SensitiveValue) Address() string {
 }
 
 func (v *SensitiveValue) Children() []render.Model {
-	if childrener, ok := v.value.(render.Childrener); ok {
-		return childrener.Children()
-	} else {
-		return []render.Model{}
-	}
+	return v.value.Children()
 }
 
 func (v *SensitiveValue) Expand() {
 	if !v.shown {
 		return
 	}
-
-	if exp, ok := v.value.(render.Collapser); ok {
-		exp.Expand()
-	}
+	v.value.Expand()
 }
 func (v *SensitiveValue) Collapse() {
 	if !v.shown {
 		return
 	}
-
-	if exp, ok := v.value.(render.Collapser); ok {
-		exp.Collapse()
-	}
+	v.value.Collapse()
 }
 func (v *SensitiveValue) IsCollapsed() bool {
 	if !v.shown {
 		return true
 	}
-	if exp, ok := v.value.(render.Collapser); ok {
-		return exp.IsCollapsed()
-	}
-	return true
+	return v.value.IsCollapsed()
 }
 
 func (v *SensitiveValue) View() []render.Line {

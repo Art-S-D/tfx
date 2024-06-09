@@ -100,28 +100,25 @@ func (m *TfxModel) replaceAtCursor(by render.Model, previousHeight int) {
 
 func (m *TfxModel) expandAtSelection() {
 	selected := m.Selected()
-	if collapser, ok := selected.(render.Collapser); ok {
-		previousHeight := len(selected.View())
-		collapser.Expand()
-		m.replaceAtCursor(selected, previousHeight)
+	previousHeight := len(selected.View())
+	selected.Expand()
+	m.replaceAtCursor(selected, previousHeight)
 
-		m.clampCursor()
-		m.moveScreenToCursor()
-	}
+	m.clampCursor()
+	m.moveScreenToCursor()
+
 }
 func (m *TfxModel) collapseAtSelection() {
 	selected := m.Selected()
-	if collapser, ok := selected.(render.Collapser); ok {
-		previousLines := selected.View()
-		if m.screen[m.cursor].PointsToEnd {
-			m.cursor -= len(previousLines) - 1
-		}
-		collapser.Collapse()
-		m.replaceAtCursor(selected, len(previousLines))
-
-		m.clampCursor()
-		m.moveScreenToCursor()
+	previousLines := selected.View()
+	if m.screen[m.cursor].PointsToEnd {
+		m.cursor -= len(previousLines) - 1
 	}
+	selected.Collapse()
+	m.replaceAtCursor(selected, len(previousLines))
+
+	m.clampCursor()
+	m.moveScreenToCursor()
 }
 func (m *TfxModel) revealAtSelection() {
 	selected := m.Selected()

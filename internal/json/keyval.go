@@ -18,27 +18,16 @@ func (k *KeyVal) Address() string {
 }
 
 func (k *KeyVal) Expand() {
-	if expand, ok := k.Value.(render.Collapser); ok {
-		expand.Expand()
-	}
+	k.Value.Expand()
 }
 func (k *KeyVal) Collapse() {
-	if expand, ok := k.Value.(render.Collapser); ok {
-		expand.Collapse()
-	}
+	k.Value.Collapse()
 }
 func (k *KeyVal) IsCollapsed() bool {
-	if expand, ok := k.Value.(render.Collapser); ok {
-		return expand.IsCollapsed()
-	}
-	return true
+	return k.Value.IsCollapsed()
 }
-
 func (k *KeyVal) Children() []render.Model {
-	if child, ok := k.Value.(render.Childrener); ok {
-		return child.Children()
-	}
-	return []render.Model{}
+	return k.Value.Children()
 }
 
 func (k *KeyVal) View() []render.Line {

@@ -7,13 +7,14 @@ import (
 )
 
 type StateModuleModel struct {
-	render.BaseCollapser
+	render.BaseModel
 	module  *tfjson.StateModule
 	content []render.Model
 }
 
 func StateModuleModelFromJson(json *tfjson.StateModule) *StateModuleModel {
 	module := &StateModuleModel{module: json}
+	module.Addr = json.Address
 
 	for _, resource := range json.Resources {
 		childResource := NewStateResourceModel(resource)
@@ -24,10 +25,6 @@ func StateModuleModelFromJson(json *tfjson.StateModule) *StateModuleModel {
 		module.content = append(module.content, childModule)
 	}
 	return module
-}
-
-func (m *StateModuleModel) Address() string {
-	return m.module.Address
 }
 
 func (m *StateModuleModel) Children() []render.Model {

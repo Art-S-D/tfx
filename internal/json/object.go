@@ -8,7 +8,6 @@ import (
 
 type jsonObject struct {
 	render.BaseModel
-	render.BaseCollapser
 	value map[string]render.Model
 }
 

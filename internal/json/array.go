@@ -7,7 +7,6 @@ import (
 
 type jsonArray struct {
 	render.BaseModel
-	render.BaseCollapser
 	value []render.Model
 }
 
