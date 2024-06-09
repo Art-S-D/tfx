@@ -3,8 +3,10 @@ package json
 import (
 	"fmt"
 	"reflect"
+	"slices"
 
 	"github.com/Art-S-D/tfx/internal/render"
+	"golang.org/x/exp/maps"
 )
 
 func ParseValue(jsonValue any, sensitiveValues any, address string) (render.Model, error) {
@@ -51,6 +53,11 @@ func ParseValue(jsonValue any, sensitiveValues any, address string) (render.Mode
 			return nil, fmt.Errorf("failed to parse sensitive value to object %v", sensitiveValues)
 		}
 
+		if len(value) == 0 {
+			return object, nil
+		}
+		longestKey := slices.MaxFunc(maps.Keys(value), func(s1, s2 string) int { return len(s1) - len(s2) })
+
 		for k, v := range value {
 			addr := fmt.Sprintf("%s.%s", address, k)
 			var nextSensitive any
@@ -61,7 +68,11 @@ func ParseValue(jsonValue any, sensitiveValues any, address string) (render.Mode
 			if err != nil {
 				return nil, err
 			}
-			object.value[k] = parsed
+			object.value[k] = &KeyVal{
+				Key:        k,
+				Value:      parsed,
+				KeyPadding: uint8(len(longestKey)),
+			}
 		}
 		return object, nil
 	default:
