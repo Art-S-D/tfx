@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"github.com/Art-S-D/tfx/internal/render"
@@ -14,7 +14,7 @@ const (
 	showHelp
 )
 
-type stateModel struct {
+type TfxModel struct {
 	screenWidth, screenHeight int
 	cursor                    int
 	screenStart               int // should always be between [0, rootModule.Height() - screenHeight)
@@ -27,9 +27,18 @@ type stateModel struct {
 	theme *style.Theme
 }
 
-func (m *stateModel) refreshScreen() {
+func (m *TfxModel) refreshScreen() {
 	m.screen = m.rootModule.View()
 }
-func (m *stateModel) Init() tea.Cmd {
+func (m *TfxModel) Init() tea.Cmd {
 	return tea.SetWindowTitle("tfx")
+}
+
+func NewModel(rootModule *tfstate.RootModuleModel, theme *style.Theme) *TfxModel {
+	out := &TfxModel{
+		rootModule: rootModule,
+		theme:      theme,
+	}
+	out.refreshScreen()
+	return out
 }

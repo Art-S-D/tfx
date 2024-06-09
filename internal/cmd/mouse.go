@@ -1,11 +1,11 @@
-package main
+package cmd
 
 import (
 	"github.com/Art-S-D/tfx/internal/render"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m *stateModel) flipExpandedAtCursor() {
+func (m *TfxModel) flipExpandedAtCursor() {
 	if collapser, ok := m.Selected().(render.Collapser); ok {
 		if collapser.IsCollapsed() {
 			m.expandAtSelection()
@@ -14,7 +14,7 @@ func (m *stateModel) flipExpandedAtCursor() {
 		}
 	}
 }
-func (m *stateModel) handleMouseEvent(msg tea.MouseMsg) {
+func (m *TfxModel) handleMouseEvent(msg tea.MouseMsg) {
 	if msg.Action != tea.MouseActionPress {
 		return
 	}

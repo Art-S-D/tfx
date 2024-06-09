@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"fmt"
@@ -8,12 +8,12 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func (m *stateModel) Selected() render.Model {
+func (m *TfxModel) Selected() render.Model {
 	currentLine := m.screen[m.cursor]
 	return currentLine.PointsTo
 }
 
-func (m *stateModel) previewLine() string {
+func (m *TfxModel) previewLine() string {
 	selection := m.Selected()
 	selectionName := selection.Address()
 
@@ -32,7 +32,7 @@ func (m *stateModel) previewLine() string {
 	return m.theme.Selection(previewLine).String()
 }
 
-func (m *stateModel) View() string {
+func (m *TfxModel) View() string {
 	switch m.state {
 	case showHelp:
 		return m.helpScreen()
@@ -42,7 +42,7 @@ func (m *stateModel) View() string {
 	panic("unknown state")
 }
 
-func (m *stateModel) viewState() string {
+func (m *TfxModel) viewState() string {
 	if m.screenHeight == 0 {
 		return ""
 	}

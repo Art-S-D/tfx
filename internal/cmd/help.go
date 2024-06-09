@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"fmt"
@@ -39,7 +39,7 @@ var helpText string = `
         .                   dig
 `
 
-func (m *stateModel) helpScreen() string {
+func (m *TfxModel) helpScreen() string {
 	help := lipgloss.PlaceVertical(m.screenHeight-1, lipgloss.Top, helpText)
 
 	lastLine := ": press q or ? to close help"
@@ -49,7 +49,7 @@ func (m *stateModel) helpScreen() string {
 	return fmt.Sprintf("%s\n%s", help, lastLine)
 }
 
-func (m *stateModel) updateHelpView(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *TfxModel) updateHelpView(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {

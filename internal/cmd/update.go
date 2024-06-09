@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"slices"
@@ -8,16 +8,16 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// func (m *stateModel) screenBottom() int {
+// func (m *TfxModel) screenBottom() int {
 // 	// should be -1 but we have -2 instead to account for the preview
 // 	return m.screenHeight + m.screenStart - 2
 // }
 
-func (m *stateModel) EntireHeight() int {
+func (m *TfxModel) EntireHeight() int {
 	return len(m.screen)
 }
 
-func (m *stateModel) clampScreen() {
+func (m *TfxModel) clampScreen() {
 	// can be negative but this will be fixed by max(0, m.screenStart)
 	// this is important when collapsing a node at the bottom of the screen
 	lowestPossibleScreen := m.EntireHeight() - m.screenHeight + 1
@@ -26,7 +26,7 @@ func (m *stateModel) clampScreen() {
 }
 
 // moves the cursor so that it does not go out of the state
-func (m *stateModel) clampCursor() {
+func (m *TfxModel) clampCursor() {
 	if m.cursor < 0 {
 		m.cursor = 0
 	}
@@ -38,7 +38,7 @@ func (m *stateModel) clampCursor() {
 // moves the screen so that the cursor is in view
 // used when the ui jumps around, ex: when a big element is collapsed
 // basically the cursor does what it wants and the screen follows it
-func (m *stateModel) moveScreenToCursor() {
+func (m *TfxModel) moveScreenToCursor() {
 	m.clampScreen()
 
 	// cursor is above the screen
@@ -55,31 +55,31 @@ func (m *stateModel) moveScreenToCursor() {
 	}
 }
 
-func (m *stateModel) cursorUp() {
+func (m *TfxModel) cursorUp() {
 	m.cursor -= 1
 	m.clampCursor()
 	m.moveScreenToCursor()
 }
 
-func (m *stateModel) cursorDown() {
+func (m *TfxModel) cursorDown() {
 	m.cursor += 1
 	m.clampCursor()
 	m.moveScreenToCursor()
 }
 
-func (m *stateModel) goToBottom() {
+func (m *TfxModel) goToBottom() {
 	m.cursor = m.EntireHeight() - 1
 	m.moveScreenToCursor()
 }
 
-// func (m *stateModel) pageDown() {
+// func (m *TfxModel) pageDown() {
 // 	m.screenStart += m.screenHeight
 // 	m.cursor = m.screenStart
 // 	m.moveScreenToCursorStart()
 // 	m.clampCursor()
 // }
 
-func (m *stateModel) revealSensitiveValue(model render.Model, value *json.SensitiveValue) {
+func (m *TfxModel) revealSensitiveValue(model render.Model, value *json.SensitiveValue) {
 	height := len(value.View())
 	value.Reveal()
 	m.replaceAtCursor(model, height)
@@ -91,14 +91,14 @@ func (m *stateModel) revealSensitiveValue(model render.Model, value *json.Sensit
 // replace the `previousHeight`th lines under the cursor by the View of `by`
 // while keeping the previous indentation
 // this allows swapping the previous content of a Model by the new content
-func (m *stateModel) replaceAtCursor(by render.Model, previousHeight int) {
+func (m *TfxModel) replaceAtCursor(by render.Model, previousHeight int) {
 	indentation := m.screen[m.cursor].Indentation
 	nextLines := by.View()
 	render.IndentBy(nextLines, indentation)
 	m.screen = slices.Replace(m.screen, m.cursor, m.cursor+previousHeight, nextLines...)
 }
 
-func (m *stateModel) expandAtSelection() {
+func (m *TfxModel) expandAtSelection() {
 	selected := m.Selected()
 	if collapser, ok := selected.(render.Collapser); ok {
 		previousHeight := len(selected.View())
@@ -109,7 +109,7 @@ func (m *stateModel) expandAtSelection() {
 		m.moveScreenToCursor()
 	}
 }
-func (m *stateModel) collapseAtSelection() {
+func (m *TfxModel) collapseAtSelection() {
 	selected := m.Selected()
 	if collapser, ok := selected.(render.Collapser); ok {
 		previousLines := selected.View()
@@ -123,7 +123,7 @@ func (m *stateModel) collapseAtSelection() {
 		m.moveScreenToCursor()
 	}
 }
-func (m *stateModel) revealAtSelection() {
+func (m *TfxModel) revealAtSelection() {
 	selected := m.Selected()
 	if sensitiveValue, ok := selected.(*json.SensitiveValue); ok {
 		m.revealSensitiveValue(selected, sensitiveValue)
@@ -135,7 +135,7 @@ func (m *stateModel) revealAtSelection() {
 	}
 }
 
-func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *TfxModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -168,7 +168,7 @@ func (m *stateModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m *stateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *TfxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m.state {
 	case showHelp:
 		return m.updateHelpView(msg)

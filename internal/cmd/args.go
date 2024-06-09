@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"flag"
@@ -8,12 +8,12 @@ import (
 	"github.com/mattn/go-isatty"
 )
 
-type args struct {
-	src io.Reader
+type Args struct {
+	Src io.Reader
 }
 
-func parseArgs() *args {
-	var out args
+func ParseArgs() *Args {
+	var out Args
 
 	fs := flag.NewFlagSet("tfx", flag.ExitOnError)
 	input := fs.String("in", "", "input file")
@@ -27,7 +27,7 @@ func parseArgs() *args {
 			if err != nil {
 				panic(err.Error())
 			}
-			out.src = f
+			out.Src = f
 		} else {
 			fs.Usage()
 			os.Exit(0)
@@ -37,7 +37,7 @@ func parseArgs() *args {
 			fs.Usage()
 			os.Exit(0)
 		} else {
-			out.src = os.Stdin
+			out.Src = os.Stdin
 		}
 	}
 

@@ -4,6 +4,11 @@ import "strings"
 
 type Style uint8
 
+type Str struct {
+	Value string
+	Style Style
+}
+
 const (
 	defaultStyle = Style(iota)
 	typeStyle
@@ -46,9 +51,4 @@ func Cursor(s ...string) Str {
 }
 func Selection(s ...string) Str {
 	return Str{Value: strings.Join(s, ""), Style: selection}
-}
-
-type Str struct {
-	Value string
-	Style Style
 }
