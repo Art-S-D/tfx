@@ -24,6 +24,10 @@ func (m *TfxModel) handleMouseEvent(msg tea.MouseMsg) {
 		m.screenStart -= 1
 		m.clampScreen()
 	case tea.MouseButtonLeft:
+		// prevent clicking on the preview line
+		if msg.Y >= m.screenHeight-1 {
+			return
+		}
 		destinationRow := m.screenStart + msg.Y
 		if destinationRow > m.EntireHeight() {
 			return
