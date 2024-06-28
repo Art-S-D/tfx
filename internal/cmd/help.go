@@ -53,7 +53,7 @@ func (m *TfxModel) updateHelpView(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "?", "q":
+		case "?", "q", "esc":
 			m.state = viewState
 		}
 	}
