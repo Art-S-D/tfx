@@ -37,7 +37,7 @@ func main() {
 	}
 
 	terraformState := cmd.NewModel(
-		tfstate.RootModuleModelFromJson(*plan.Values.RootModule),
+		tfstate.RootModuleNode(plan.Values.RootModule),
 		style.DefaultTheme,
 	)
 

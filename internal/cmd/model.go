@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/node"
 	"github.com/Art-S-D/tfx/internal/style"
-	"github.com/Art-S-D/tfx/internal/tfstate"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -16,29 +15,32 @@ const (
 
 type TfxModel struct {
 	screenWidth, screenHeight int
-	cursor                    int
-	screenStart               int // should always be between [0, rootModule.Height() - screenHeight)
+	cursor                    *node.Node
+	screenStart               *node.Node
 
-	rootModule *tfstate.RootModuleModel
-	screen     []render.Line
-
+	root  *node.Node
 	state modelState
-
 	theme *style.Theme
 }
 
-func (m *TfxModel) refreshScreen() {
-	m.screen = m.rootModule.View()
+func (m *TfxModel) screenEnd() *node.Node {
+	end := m.screenStart
+	for i := 0; i < m.screenHeight-2 && end.Next() != nil; i++ {
+		end = end.Next()
+	}
+	return end
 }
+
 func (m *TfxModel) Init() tea.Cmd {
 	return tea.SetWindowTitle("tfx")
 }
 
-func NewModel(rootModule *tfstate.RootModuleModel, theme *style.Theme) *TfxModel {
+func NewModel(root *node.Node, theme *style.Theme) *TfxModel {
 	out := &TfxModel{
-		rootModule: rootModule,
-		theme:      theme,
+		root:        root,
+		theme:       theme,
+		screenStart: root.Next(),
+		cursor:      root.Next(),
 	}
-	out.refreshScreen()
 	return out
 }

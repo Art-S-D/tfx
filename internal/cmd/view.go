@@ -3,19 +3,10 @@ package cmd
 import (
 	"fmt"
 	"strings"
-
-	"github.com/Art-S-D/tfx/internal/render"
-	"github.com/charmbracelet/lipgloss"
 )
 
-func (m *TfxModel) Selected() render.Model {
-	currentLine := m.screen[m.cursor]
-	return currentLine.PointsTo
-}
-
 func (m *TfxModel) previewLine() string {
-	selection := m.Selected()
-	selectionName := selection.Address()
+	selectionName := m.cursor.Address()
 
 	helpText := "[?]help [q]quit "
 	var previewLine string
@@ -47,17 +38,21 @@ func (m *TfxModel) viewState() string {
 		return ""
 	}
 
-	screenLines := m.rootModule.View()
-	screenBottom := min(m.screenStart+m.screenHeight-1, m.EntireHeight())
-	screenSlice := screenLines[m.screenStart:screenBottom]
-	var sb strings.Builder
-	for i, line := range screenSlice {
-		sb.WriteString(line.Render(m.theme, i+m.screenStart == m.cursor))
-		if i < len(screenSlice)-1 {
-			sb.WriteRune('\n')
+	var screen []string
+
+	currentNode := m.screenStart
+	for i := 0; i < m.screenHeight-1 && currentNode != nil; i++ {
+		line := ""
+		if currentNode == m.cursor {
+			line = m.theme.RenderWithCursor(currentNode.View())
+		} else {
+			line = m.theme.Render(currentNode.View())
 		}
+		screen = append(screen, line)
+
+		currentNode = currentNode.Next()
 	}
 
-	screen := lipgloss.PlaceVertical(m.screenHeight-1, lipgloss.Top, sb.String())
-	return fmt.Sprintf("%s\n%s", screen, m.previewLine())
+	screen = append(screen, m.previewLine())
+	return strings.Join(screen, "\n")
 }
