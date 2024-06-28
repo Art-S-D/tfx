@@ -1,44 +1,59 @@
 package json
 
 import (
-	"github.com/Art-S-D/tfx/internal/render"
+	"fmt"
+
+	"github.com/Art-S-D/tfx/internal/node"
 	"github.com/Art-S-D/tfx/internal/style"
 )
 
-type jsonArray struct {
-	render.BaseModel
-	value []render.Model
+func emptyArray(address string) *node.Node {
+	out := &node.Node{}
+	s := style.Default("[]").Selectable()
+	out.SetCollapsed(s)
+	out.SetExpanded(s)
+	out.SetAddress(address)
+	return out
 }
-
-func (a *jsonArray) Children() []render.Model {
-	return a.value
-}
-
-func (a *jsonArray) View() []render.Line {
-	firstLine := render.Line{PointsTo: a}
-
-	if len(a.value) == 0 {
-		firstLine.AddSelectable(style.Default("[]"))
-		return []render.Line{firstLine}
+func jsonArrayNode(address string, array []any, sensitiveValues any) (*node.Node, error) {
+	if len(array) == 0 {
+		return emptyArray(address), nil
 	}
-	if !a.Expanded {
-		firstLine.AddSelectable(style.Default("["))
-		firstLine.AddSelectable(style.Preview("..."))
-		firstLine.AddSelectable(style.Default("]"))
-		return []render.Line{firstLine}
-	} else {
-		firstLine.AddSelectable(style.Default("["))
-		out := []render.Line{firstLine}
 
-		for _, v := range a.value {
-			lines := v.View()
-			render.Indent(lines)
-			out = append(out, lines...)
+	out := &node.Node{}
+	out.SetAddress(address)
+	out.SetExpanded(style.Default("[").Selectable())
+	out.SetCollapsed(
+		style.Concat(
+			style.Default("["),
+			style.Preview("..."),
+			style.Default("]"),
+		).Selectable(),
+	)
+
+	sensitive, ok := sensitiveValues.([]any)
+	if sensitiveValues != nil && !ok {
+		return nil, fmt.Errorf("failed to parse sensitive value to array %v for json %v", sensitiveValues, array)
+	}
+
+	for i, v := range array {
+		addr := fmt.Sprintf("%s[%d]", address, i)
+		var nextSensitive any
+		if sensitiveValues != nil {
+			nextSensitive = sensitive[i]
 		}
-
-		lastLine := render.Line{PointsTo: a, PointsToEnd: true}
-		lastLine.AddSelectable(style.Default("]"))
-		out = append(out, lastLine)
-		return out
+		parsed, err := ParseValue(v, nextSensitive, addr)
+		if err != nil {
+			return nil, err
+		}
+		parsed.IncreaseDepth()
+		parsed.AddEndingColon()
+		out.AppendChild(parsed)
 	}
+
+	lastChild := node.String("]")
+	lastChild.SetAddress(address)
+	out.AppendChild(lastChild)
+
+	return out, nil
 }

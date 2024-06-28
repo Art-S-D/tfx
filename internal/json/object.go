@@ -1,55 +1,68 @@
 package json
 
 import (
-	"github.com/Art-S-D/tfx/internal/render"
+	"fmt"
+	"slices"
+
+	"github.com/Art-S-D/tfx/internal/node"
 	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/utils"
+	"golang.org/x/exp/maps"
 )
 
-type jsonObject struct {
-	render.BaseModel
-	value map[string]render.Model
-}
-
-func (o *jsonObject) Keys() []string {
-	return utils.KeysOrdered(o.value)
-}
-
-func (b *jsonObject) Children() []render.Model {
-	var out []render.Model
-	keys := b.Keys()
-	for _, k := range keys {
-		out = append(out, b.value[k])
-	}
+func emptyObject(address string) *node.Node {
+	out := &node.Node{}
+	s := style.Default("{}").Selectable()
+	out.SetCollapsed(s)
+	out.SetExpanded(s)
+	out.SetAddress(address)
 	return out
 }
 
-func (o *jsonObject) View() []render.Line {
-	firstLine := render.Line{PointsTo: o}
-
-	if len(o.value) == 0 {
-		firstLine.AddSelectable(style.Default("{}"))
-		return []render.Line{firstLine}
-	} else if !o.Expanded {
-		firstLine.AddSelectable(style.Default("{"))
-		firstLine.AddSelectable(style.Preview("..."))
-		firstLine.AddSelectable(style.Default("}"))
-		return []render.Line{firstLine}
-	} else {
-		firstLine.AddSelectable(style.Default("{"))
-		out := []render.Line{firstLine}
-
-		keys := o.Keys()
-		for _, k := range keys {
-			v := o.value[k]
-
-			lines := v.View()
-			render.Indent(lines)
-			out = append(out, lines...)
-		}
-		lastLine := render.Line{PointsTo: o, PointsToEnd: true}
-		lastLine.AddSelectable(style.Default("}"))
-		out = append(out, lastLine)
-		return out
+func jsonObjectNode(address string, object map[string]any, sensitiveValues any) (*node.Node, error) {
+	if len(object) == 0 {
+		return emptyObject(address), nil
 	}
+
+	out := &node.Node{}
+	out.SetAddress(address)
+	out.SetExpanded(style.Default("{").Selectable())
+	out.SetCollapsed(
+		style.Concat(
+			style.Default("{"),
+			style.Preview("..."),
+			style.Default("}"),
+		).Selectable(),
+	)
+
+	sensitive, ok := sensitiveValues.(map[string]any)
+	if sensitiveValues != nil && !ok {
+		return nil, fmt.Errorf("failed to parse sensitive value to object %v", sensitiveValues)
+	}
+
+	longestKey := slices.MaxFunc(maps.Keys(object), func(s1, s2 string) int { return len(s1) - len(s2) })
+	keys := utils.KeysOrdered(object)
+
+	for _, k := range keys {
+		v := object[k]
+
+		addr := fmt.Sprintf("%s.%s", address, k)
+		var nextSensitive any
+		if sensitiveValues != nil {
+			nextSensitive = sensitive[k]
+		}
+		parsed, err := ParseValue(v, nextSensitive, addr)
+		if err != nil {
+			return nil, err
+		}
+		parsed.SetKey(k, uint8(len(longestKey)-len(k)))
+		parsed.IncreaseDepth()
+		out.AppendChild(parsed)
+	}
+
+	lastChild := node.String("}")
+	lastChild.SetAddress(address)
+	out.AppendChild(lastChild)
+
+	return out, nil
 }

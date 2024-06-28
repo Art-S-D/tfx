@@ -3,84 +3,43 @@ package json
 import (
 	"fmt"
 	"reflect"
-	"slices"
 
-	"github.com/Art-S-D/tfx/internal/render"
-	"golang.org/x/exp/maps"
+	"github.com/Art-S-D/tfx/internal/node"
+	"github.com/Art-S-D/tfx/internal/style"
 )
 
-func ParseValue(jsonValue any, sensitiveValues any, address string) (render.Model, error) {
+func ParseValue(jsonValue any, sensitiveValues any, address string) (*node.Node, error) {
+	isSensitive := false
 	if b, ok := sensitiveValues.(bool); ok && b {
-		result, err := ParseValue(jsonValue, nil, address)
-		return &SensitiveValue{value: result}, err
+		isSensitive = true
 	}
 
 	switch value := jsonValue.(type) {
 	case string:
-		return &jsonString{render.BaseModel{Addr: address}, value}, nil
+		s := fmt.Sprintf("\"%s\"", value)
+		out := node.Str(style.String(s).Selectable())
+		out.SetAddress(address)
+		out.SetSensitive(isSensitive)
+		return out, nil
 	case float64:
-		return &jsonNumber{render.BaseModel{Addr: address}, value}, nil
+		out := node.Str(style.Number(fmt.Sprintf("%.2f", value)).Selectable())
+		out.SetAddress(address)
+		out.SetSensitive(isSensitive)
+		return out, nil
 	case bool:
-		return &jsonBool{render.BaseModel{Addr: address}, value}, nil
+		out := node.Str(style.Boolean(fmt.Sprintf("%v", value)).Selectable())
+		out.SetAddress(address)
+		out.SetSensitive(isSensitive)
+		return out, nil
 	case nil:
-		return &jsonNull{render.BaseModel{Addr: address}}, nil
+		out := node.Str(style.Null("null").Selectable())
+		out.SetAddress(address)
+		out.SetSensitive(isSensitive)
+		return out, nil
 	case []any:
-		array := &jsonArray{
-			render.BaseModel{Addr: address, Expanded: false},
-			nil,
-		}
-
-		sensitive, ok := sensitiveValues.([]any)
-		if sensitiveValues != nil && !ok {
-			return nil, fmt.Errorf("failed to parse sensitive value to array %v for json %v", sensitiveValues, value)
-		}
-
-		for i, v := range value {
-			addr := fmt.Sprintf("%s[%d]", address, i)
-			var nextSensitive any
-			if sensitiveValues != nil {
-				nextSensitive = sensitive[i]
-			}
-			parsed, err := ParseValue(v, nextSensitive, addr)
-			if err != nil {
-				return nil, err
-			}
-			array.value = append(array.value, parsed)
-		}
-		return array, nil
+		return jsonArrayNode(address, value, sensitiveValues)
 	case map[string]any:
-		object := &jsonObject{
-			render.BaseModel{Addr: address, Expanded: false},
-			make(map[string]render.Model),
-		}
-
-		sensitive, ok := sensitiveValues.(map[string]any)
-		if sensitiveValues != nil && !ok {
-			return nil, fmt.Errorf("failed to parse sensitive value to object %v", sensitiveValues)
-		}
-
-		if len(value) == 0 {
-			return object, nil
-		}
-		longestKey := slices.MaxFunc(maps.Keys(value), func(s1, s2 string) int { return len(s1) - len(s2) })
-
-		for k, v := range value {
-			addr := fmt.Sprintf("%s.%s", address, k)
-			var nextSensitive any
-			if sensitiveValues != nil {
-				nextSensitive = sensitive[k]
-			}
-			parsed, err := ParseValue(v, nextSensitive, addr)
-			if err != nil {
-				return nil, err
-			}
-			object.value[k] = &KeyVal{
-				Key:        k,
-				Value:      parsed,
-				KeyPadding: uint8(len(longestKey)),
-			}
-		}
-		return object, nil
+		return jsonObjectNode(address, value, sensitiveValues)
 	default:
 		jsonType := reflect.TypeOf(jsonValue)
 		return nil, fmt.Errorf("unknown json value %v of type %v", jsonValue, jsonType)

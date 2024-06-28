@@ -1,36 +1,20 @@
 package tfstate
 
 import (
-	"github.com/Art-S-D/tfx/internal/render"
+	"github.com/Art-S-D/tfx/internal/node"
 	tfjson "github.com/hashicorp/terraform-json"
 )
 
-type RootModuleModel struct {
-	module  tfjson.StateModule
-	content []render.Model
-}
-
-func RootModuleModelFromJson(json tfjson.StateModule) *RootModuleModel {
-	root := &RootModuleModel{module: json}
+func RootModuleNode(json *tfjson.StateModule) *node.Node {
+	root := &node.Node{}
 	for _, resource := range json.Resources {
-		childResource := NewStateResourceModel(resource)
-		root.content = append(root.content, childResource)
+		childResource := StateResourceNode(resource)
+		root.AppendChild(childResource)
 	}
 	for _, module := range json.ChildModules {
-		childModule := StateModuleModelFromJson(module)
-		root.content = append(root.content, childModule)
+		childModule := StateModuleNode(module)
+		root.AppendChild(childModule)
 	}
+	root.Expand()
 	return root
-}
-
-func (m *RootModuleModel) Address() string          { return "" }
-func (m *RootModuleModel) Children() []render.Model { return m.content }
-
-func (m *RootModuleModel) View() []render.Line {
-	var out []render.Line
-	for _, model := range m.content {
-		childLines := model.View()
-		out = append(out, childLines...)
-	}
-	return out
 }
