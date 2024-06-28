@@ -18,6 +18,7 @@ type Theme struct {
 	preview      lipgloss.Style
 	cursor       lipgloss.Style
 	selection    lipgloss.Style
+	sensitive    lipgloss.Style
 }
 
 func (t *Theme) Default(s ...string) lipgloss.Style {
@@ -50,6 +51,9 @@ func (t *Theme) Cursor(s ...string) lipgloss.Style {
 func (t *Theme) Selection(s ...string) lipgloss.Style {
 	return t.selection.SetString(strings.Join(s, ""))
 }
+func (t *Theme) Sensitive(s ...string) lipgloss.Style {
+	return t.sensitive.SetString(strings.Join(s, ""))
+}
 
 var DefaultTheme *Theme
 var NoColor *Theme
@@ -66,6 +70,7 @@ func init() {
 		preview:      lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 		cursor:       lipgloss.NewStyle().Reverse(true),
 		selection:    lipgloss.NewStyle().Background(lipgloss.Color("7")).Foreground(lipgloss.Color("0")),
+		sensitive:    lipgloss.NewStyle().Foreground(lipgloss.Color("8")),
 	}
 
 	NoColor = &Theme{
@@ -78,39 +83,58 @@ func init() {
 		preview:     lipgloss.NewStyle(),
 		cursor:      lipgloss.NewStyle(),
 		selection:   lipgloss.NewStyle(),
+		sensitive:   lipgloss.NewStyle(),
 	}
 }
 
-func (t *Theme) Render(str Str) string {
-	switch str.Style {
+func (t *Theme) render(str str) string {
+	switch str.style {
 	case defaultStyle:
-		return t.defaultStyle.Render(str.Value)
+		return t.defaultStyle.Render(str.value)
 	case typeStyle:
-		return t.typeStyle.Render(str.Value)
+		return t.typeStyle.Render(str.value)
 	case key:
-		return t.key.Render(str.Value)
+		return t.key.Render(str.value)
 	case stringStyle:
-		return t.stringStyle.Render(str.Value)
+		return t.stringStyle.Render(str.value)
 	case boolean:
-		return t.boolean.Render(str.Value)
+		return t.boolean.Render(str.value)
 	case number:
-		return t.number.Render(str.Value)
+		return t.number.Render(str.value)
 	case null:
-		return t.null.Render(str.Value)
+		return t.null.Render(str.value)
 	case preview:
-		return t.preview.Render(str.Value)
+		return t.preview.Render(str.value)
 	case cursor:
-		return t.cursor.Render(str.Value)
+		return t.cursor.Render(str.value)
 	case selection:
-		return t.selection.Render(str.Value)
+		return t.selection.Render(str.value)
+	case sensitive:
+		return t.sensitive.Render(str.value)
 	}
 	panic(fmt.Errorf("unknown style %v", str))
 }
 
-func (t *Theme) RenderCursor(selected bool, str Str) string {
-	if selected {
-		return t.cursor.Render(str.Value)
-	} else {
-		return t.Render(str)
+func (t *Theme) Render(str Str) string {
+	var sb strings.Builder
+	for _, s := range str {
+		sb.WriteString(t.render(s))
 	}
+	return sb.String()
+}
+
+func (t *Theme) renderCursor(s str) string {
+	if s.selectable {
+		return t.cursor.Render(s.value)
+	} else {
+		return t.render(s)
+	}
+}
+
+func (t *Theme) RenderWithCursor(str Str) string {
+	var sb strings.Builder
+	for _, s := range str {
+		sb.WriteString(t.renderCursor(s))
+	}
+	return sb.String()
 }
