@@ -64,9 +64,14 @@ func (m *TfxModel) handleMouseEvent(msg tea.MouseMsg) {
 		}
 
 		destination := m.screenStart
-		for i := 0; i < msg.Y; i++ {
+		for i := 0; i < msg.Y && destination != nil; i++ {
 			destination = destination.Next()
 		}
+		if destination == nil {
+			// clicked on an empty line below the screen
+			return
+		}
+
 		if m.cursor == destination {
 			// if the row is already selected, expand/collapse it
 			m.flipExpandedAtCursor()

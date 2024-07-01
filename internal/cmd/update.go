@@ -4,10 +4,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-//	func (m *TfxModel) screenBottom() int {
-//		// should be -1 but we have -2 instead to account for the preview
-//		return m.screenHeight + m.screenStart - 2
-//	}
 func (m *TfxModel) clampScreenStart() {
 	end := m.screenStart
 	for i := 0; i < m.screenHeight-2; i++ {
@@ -48,30 +44,18 @@ func (m *TfxModel) screenDown() (hasMoved bool) {
 
 func (m *TfxModel) cursorUp() {
 	previous := m.cursor.Previous()
-	if previous == m.root {
-		return
-	}
-	if m.cursor == m.screenStart {
-		// move the screen with the cursor
-		m.cursor = previous
-		m.screenStart = previous
-	} else {
+	if previous != m.root {
 		m.cursor = previous
 	}
+	m.moveScreenToCursor()
 }
 
 func (m *TfxModel) cursorDown() {
 	next := m.cursor.Next()
-	if next == nil {
-		return
-	}
-	if m.cursor == m.screenEnd() {
-		// move the screen with the cursor
-		m.cursor = next
-		m.screenStart = m.screenStart.Next()
-	} else {
+	if next != nil {
 		m.cursor = next
 	}
+	m.moveScreenToCursor()
 }
 
 func (m *TfxModel) goToBottom() {
@@ -79,6 +63,19 @@ func (m *TfxModel) goToBottom() {
 	m.screenStart = m.cursor
 	for i := 0; i < m.screenHeight-2; i++ {
 		m.screenStart = m.screenStart.Previous()
+	}
+}
+
+func (m *TfxModel) pageDown() {
+	m.cursor = m.screenEnd()
+	for i := 0; i < m.screenHeight-1; i++ {
+		m.cursorDown()
+	}
+}
+func (m *TfxModel) pageUp() {
+	m.cursor = m.screenStart
+	for i := 0; i < m.screenHeight-1; i++ {
+		m.cursorUp()
 	}
 }
 
@@ -90,25 +87,32 @@ func (m *TfxModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "up":
 			m.cursorUp()
-			m.moveScreenToCursor()
 		case "down":
 			m.cursorDown()
-			m.moveScreenToCursor()
 		case "g", "G":
 			m.goToBottom()
 		case "L", "shift+right":
+			m.moveScreenToCursor()
 			m.cursor.ExpandRecursively()
 		case "H", "shift+left":
+			m.moveScreenToCursor() // prevents being stuck in the void below the state if a bug section is collapsed
 			m.cursor.CollapseRecursively()
+			m.clampScreenStart()
 		case "?":
 			m.state = showHelp
 		case "enter":
+			m.moveScreenToCursor()
 			m.cursor.Expand()
 		case "backspace":
+			m.moveScreenToCursor()
 			m.cursor.Collapse()
 
 			// need to clamp the screen start in case an element at the bottom of the screen collapsed
 			m.clampScreenStart()
+		case "pgdown", "space", "f":
+			m.pageDown()
+		case "pgup", "b":
+			m.pageUp()
 		case "r":
 			m.cursor.Reveal()
 		}
