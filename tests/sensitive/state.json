@@ -1,0 +1,55 @@
+{
+    "format_version": "1.0",
+    "terraform_version": "1.7.5",
+    "values": {
+        "root_module": {
+            "resources": [
+                {
+                    "address": "data.aws_ssm_parameter.data_parameter",
+                    "mode": "data",
+                    "type": "aws_ssm_parameter",
+                    "name": "data_parameter",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "arn": "arn:aws:ssm:eu-west-3:643043391413:parameter/tfx-test-sensitive-value",
+                        "id": "tfx-test-sensitive-value",
+                        "insecure_value": "string 1, string 2, string 3",
+                        "name": "tfx-test-sensitive-value",
+                        "type": "StringList",
+                        "value": "string 1, string 2, string 3",
+                        "version": 1,
+                        "with_decryption": true
+                    },
+                    "sensitive_values": { "value": true }
+                },
+                {
+                    "address": "aws_ssm_parameter.parameter",
+                    "mode": "managed",
+                    "type": "aws_ssm_parameter",
+                    "name": "parameter",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "allowed_pattern": "",
+                        "arn": "arn:aws:ssm:eu-west-3:643043391413:parameter/tfx-test-sensitive-value",
+                        "data_type": "text",
+                        "description": "",
+                        "id": "tfx-test-sensitive-value",
+                        "insecure_value": null,
+                        "key_id": "",
+                        "name": "tfx-test-sensitive-value",
+                        "overwrite": null,
+                        "tags": null,
+                        "tags_all": {},
+                        "tier": "Standard",
+                        "type": "StringList",
+                        "value": "string 1, string 2, string 3",
+                        "version": 1
+                    },
+                    "sensitive_values": { "tags_all": {}, "value": true }
+                }
+            ]
+        }
+    }
+}
