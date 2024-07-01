@@ -12,11 +12,11 @@ Set Width 1800
 Set Height 800
 
 
-Set TypingSpeed 400ms
+Set TypingSpeed 250ms
 
 Type "terraform show -json | tfx"
 
-Sleep 4s
+Sleep 1s
 Enter
 Sleep 4s
 
