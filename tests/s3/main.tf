@@ -3,13 +3,18 @@ terraform {}
 variable "bucket_name" {
   type = string
 }
-
-resource "aws_s3_bucket" "example" {
-  bucket = var.bucket_name
+variable "bucket_count" {
+  type    = number
+  default = 10
 }
 
-resource "aws_s3_object" "object" {
-  bucket  = aws_s3_bucket.example.id
-  key     = "object"
-  content = "this is a test object"
+resource "aws_s3_bucket" "example" {
+  count  = var.bucket_count
+  bucket = "${var.bucket_name}-${count.index}"
+}
+
+module "objects" {
+  count       = var.bucket_count
+  source      = "./objects"
+  bucket_name = aws_s3_bucket.example[count.index].bucket
 }
