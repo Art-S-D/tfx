@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (m *TfxModel) previewLine() string {
@@ -53,6 +55,10 @@ func (m *TfxModel) viewState() string {
 		currentNode = currentNode.Next()
 	}
 
-	screen = append(screen, m.previewLine())
-	return strings.Join(screen, "\n")
+	view := strings.Join(screen, "\n")
+
+	// make the program take up the entire screen if the state is too short
+	view = lipgloss.PlaceVertical(m.screenHeight-1, lipgloss.Top, view)
+
+	return fmt.Sprintf("%s\n%s", view, m.previewLine())
 }

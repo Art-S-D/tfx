@@ -36,7 +36,7 @@ func StateResourceNode(jsonResource *tfjson.StateResource) *node.Node {
 
 		value, err := json.ParseValue(v, sensitive[k], addr)
 		if err != nil {
-			panic(fmt.Errorf("failed to create state resource value %w", err))
+			panic(fmt.Errorf("failed to create state resource: %w", err))
 		}
 
 		value.SetKey(k, uint8(len(longestKey)-len(k)))

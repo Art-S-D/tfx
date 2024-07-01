@@ -96,6 +96,10 @@ func (m *TfxModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.moveScreenToCursor()
 		case "g", "G":
 			m.goToBottom()
+		case "L", "shift+right":
+			m.cursor.ExpandRecursively()
+		case "H", "shift+left":
+			m.cursor.CollapseRecursively()
 		case "?":
 			m.state = showHelp
 		case "enter":
