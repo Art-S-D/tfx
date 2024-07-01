@@ -35,6 +35,10 @@ func jsonObjectNode(address string, object map[string]any, sensitiveValues any) 
 		).Selectable(),
 	)
 
+	if _, ok := sensitiveValues.(bool); ok {
+		out.SetSensitive(true)
+		sensitiveValues = nil
+	}
 	sensitive, ok := sensitiveValues.(map[string]any)
 	if sensitiveValues != nil && !ok {
 		return nil, fmt.Errorf("failed to parse sensitive value to object %v", sensitiveValues)

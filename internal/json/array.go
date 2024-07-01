@@ -31,9 +31,13 @@ func jsonArrayNode(address string, array []any, sensitiveValues any) (*node.Node
 		).Selectable(),
 	)
 
+	if _, ok := sensitiveValues.(bool); ok {
+		out.SetSensitive(true)
+		sensitiveValues = nil
+	}
 	sensitive, ok := sensitiveValues.([]any)
 	if sensitiveValues != nil && !ok {
-		return nil, fmt.Errorf("failed to parse sensitive value to array %v for json %v", sensitiveValues, array)
+		return nil, fmt.Errorf("failed to parse sensitive value to array sensitiveValues:%v for array:%v", sensitiveValues, array)
 	}
 
 	for i, v := range array {
