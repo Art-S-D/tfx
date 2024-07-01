@@ -11,6 +11,7 @@ func makeNode() *Node {
 	out.address = "root"
 	out.collapsed = style.Default("{...}")
 	out.expanded = style.Default("{")
+	out.isExpanded = true
 
 	child1 := String("value")
 	child1.key = "key1"
