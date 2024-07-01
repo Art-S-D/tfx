@@ -30,7 +30,6 @@ type Node struct {
 }
 
 func (n *Node) Address() string             { return n.address }
-func (n *Node) Children() []*Node           { return n.children }
 func (n *Node) Parent() *Node               { return n.parent }
 func (n *Node) IsExpanded() bool            { return n.isExpanded }
 func (n *Node) Depth() uint8                { return n.depth }
@@ -58,5 +57,11 @@ func (n *Node) IncreaseDepth() {
 	n.depth += 1
 	for _, child := range n.children {
 		child.IncreaseDepth()
+	}
+}
+func (n *Node) IncreaseDepthBy(by uint8) {
+	n.depth += by
+	for _, child := range n.children {
+		child.IncreaseDepthBy(by)
 	}
 }
