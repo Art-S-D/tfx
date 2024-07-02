@@ -1,6 +1,10 @@
 package node
 
-import "github.com/Art-S-D/tfx/internal/style"
+import (
+	"slices"
+
+	"github.com/Art-S-D/tfx/internal/style"
+)
 
 const INDENT_WIDTH = 4
 
@@ -39,6 +43,10 @@ func (n *Node) SetExpanded(line style.Str)  { n.expanded = line }
 func (n *Node) SetCollapsed(line style.Str) { n.collapsed = line }
 func (n *Node) SetAddress(addr string)      { n.address = addr }
 func (n *Node) SetSensitive(sensitive bool) { n.sensitive = sensitive }
+
+func (n *Node) HasChild(child *Node) bool {
+	return slices.Contains(n.children, child)
+}
 
 func (n *Node) Reveal() {
 	n.sensitive = false

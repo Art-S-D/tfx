@@ -49,4 +49,8 @@ func main() {
 	if _, err := p.Run(); err != nil {
 		panic(err.Error())
 	}
+
+	if terraformState.PrintOnExit != nil {
+		fmt.Println(terraformState.PrintOnExit.String())
+	}
 }

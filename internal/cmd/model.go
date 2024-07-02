@@ -21,6 +21,8 @@ type TfxModel struct {
 	root  *node.Node
 	state modelState
 	theme *style.Theme
+
+	PrintOnExit *node.Node
 }
 
 func (m *TfxModel) screenEnd() *node.Node {

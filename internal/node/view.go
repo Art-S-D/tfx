@@ -1,6 +1,10 @@
 package node
 
-import "github.com/Art-S-D/tfx/internal/style"
+import (
+	"strings"
+
+	"github.com/Art-S-D/tfx/internal/style"
+)
 
 // returns a model consisting of a single string
 // useful for lines consisting soley of } or ]
@@ -30,6 +34,7 @@ func (n *Node) AddEndingColon() {
 	}
 }
 
+// only one line
 func (n *Node) View() style.Str {
 	content := n.collapsed
 	if n.isExpanded {
@@ -47,4 +52,24 @@ func (n *Node) View() style.Str {
 		)
 	}
 	return style.Spaces(int(n.depth) * INDENT_WIDTH).UnSelectable().Concat(content)
+}
+
+// raw render
+func (n *Node) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(strings.Repeat(" ", int(n.depth)*INDENT_WIDTH))
+
+	if n.key != "" {
+		sb.WriteString(n.key)
+		sb.WriteString(strings.Repeat(" ", int(n.keyPadding)))
+		sb.WriteString(" = ")
+	}
+
+	sb.WriteString(n.expanded.String())
+	for _, child := range n.children {
+		sb.WriteRune('\n')
+		sb.WriteString(child.String())
+	}
+	return sb.String()
 }

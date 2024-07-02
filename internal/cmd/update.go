@@ -67,16 +67,59 @@ func (m *TfxModel) goToBottom() {
 }
 
 func (m *TfxModel) pageDown() {
-	m.cursor = m.screenEnd()
 	for i := 0; i < m.screenHeight-1; i++ {
 		m.cursorDown()
 	}
 }
 func (m *TfxModel) pageUp() {
-	m.cursor = m.screenStart
 	for i := 0; i < m.screenHeight-1; i++ {
 		m.cursorUp()
 	}
+}
+
+func (m *TfxModel) halfPageDown() {
+	for i := 0; i < (m.screenHeight-1)/2; i++ {
+		m.cursorDown()
+	}
+}
+func (m *TfxModel) halfPageUp() {
+	for i := 0; i < (m.screenHeight-1)/2; i++ {
+		m.cursorUp()
+	}
+}
+
+func (m *TfxModel) expandAll() {
+	m.root.ExpandRecursively()
+}
+func (m *TfxModel) collapseAll() {
+	m.root.CollapseRecursively()
+	for !m.root.HasChild(m.cursor) {
+		m.cursor = m.cursor.Parent()
+	}
+}
+
+func (m *TfxModel) nextSibling() {
+	nextSibling := m.cursor.NextSibling()
+	if nextSibling == nil {
+		m.cursorDown()
+		return
+	} else {
+		m.cursor = nextSibling
+		m.moveScreenToCursor()
+	}
+}
+func (m *TfxModel) previousSibling() {
+	previousSibling := m.cursor.PreviousSibling()
+	if previousSibling != nil && previousSibling != m.root {
+		m.cursor = previousSibling
+		m.moveScreenToCursor()
+	}
+}
+
+func (m *TfxModel) printValue() {
+	m.cursor.ExpandRecursively()
+	m.cursor.IncreaseDepthBy(-m.cursor.Depth())
+	m.PrintOnExit = m.cursor
 }
 
 func (m *TfxModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -85,9 +128,9 @@ func (m *TfxModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q", "esc":
 			return m, tea.Quit
-		case "up":
+		case "up", "k":
 			m.cursorUp()
-		case "down":
+		case "down", "j":
 			m.cursorDown()
 		case "g", "G":
 			m.goToBottom()
@@ -100,19 +143,35 @@ func (m *TfxModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.clampScreenStart()
 		case "?":
 			m.state = showHelp
-		case "enter":
+		case "enter", "l", "right":
 			m.moveScreenToCursor()
 			m.cursor.Expand()
-		case "backspace":
+		case "backspace", "h", "left":
 			m.moveScreenToCursor()
 			m.cursor.Collapse()
-
 			// need to clamp the screen start in case an element at the bottom of the screen collapsed
 			m.clampScreenStart()
 		case "pgdown", "space", "f":
 			m.pageDown()
 		case "pgup", "b":
 			m.pageUp()
+		case "u", "ctrl+u":
+			m.halfPageUp()
+		case "d", "ctrl+d":
+			m.halfPageDown()
+		case "E":
+			m.collapseAll()
+			m.moveScreenToCursor()
+		case "e":
+			m.expandAll()
+			m.moveScreenToCursor()
+		case "J", "shift+down":
+			m.nextSibling()
+		case "K", "shift+up":
+			m.previousSibling()
+		case "P":
+			m.printValue()
+			return m, tea.Quit
 		case "r":
 			m.cursor.Reveal()
 		}

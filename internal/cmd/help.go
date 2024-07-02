@@ -7,6 +7,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// missing keybindings from fx
+// 1-9                 collapse to nth level
+// z                   toggle string wrap
+// y                   yank/copy
+
 var helpText string = `
     Key Bindings
         q, ctrl+c, exc      exit program
@@ -25,12 +30,9 @@ var helpText string = `
         H, shift+left       collapse recursively
         e                   expand all
         E                   collapse all
-        1-9                 collapse to nth level
         J, shift+down       next sibling
         K, shift+up         previous sibling
         r                   reveal value
-        z                   toggle string wrap
-        y                   yank/copy
         /                   search regexp
         n                   next search result
         N                   prev search result

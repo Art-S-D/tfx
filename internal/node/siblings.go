@@ -13,7 +13,7 @@ func (n *Node) after(child *Node) *Node {
 			}
 		}
 	}
-	panic("child not found")
+	panic("after: child not found")
 }
 
 func (n *Node) Next() *Node {
@@ -24,6 +24,11 @@ func (n *Node) Next() *Node {
 	if len(n.children) > 0 {
 		return n.children[0]
 	}
+	return n.parent.after(n)
+}
+
+// can be nil if there are no more siblings
+func (n *Node) NextSibling() *Node {
 	return n.parent.after(n)
 }
 
@@ -46,7 +51,7 @@ func (n *Node) before(child *Node) *Node {
 			}
 		}
 	}
-	panic("child not found")
+	panic("before: child not found")
 }
 
 func (n *Node) Previous() *Node {
@@ -55,4 +60,17 @@ func (n *Node) Previous() *Node {
 	} else {
 		return n.parent.before(n)
 	}
+}
+
+func (n *Node) PreviousSibling() *Node {
+	for i, child := range n.parent.children {
+		if child == n {
+			if i == 0 {
+				return n.parent
+			} else {
+				return n.parent.children[i-1] // no LastChild here
+			}
+		}
+	}
+	panic("PreviousSibling: child not found")
 }
