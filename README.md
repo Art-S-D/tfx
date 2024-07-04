@@ -1,4 +1,4 @@
-[fx](https://github.com/antonmedv/fx) for terraform
+Tfx if [fx](https://github.com/antonmedv/fx) for terraform
 
 ![preview](./.github/preview.gif)
 
