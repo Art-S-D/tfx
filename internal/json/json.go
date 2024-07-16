@@ -17,24 +17,24 @@ func ParseValue(jsonValue any, sensitiveValues any, address string) (*node.Node,
 	switch value := jsonValue.(type) {
 	case string:
 		s := fmt.Sprintf("\"%s\"", value)
-		out := node.Str(style.String(s).Selectable())
-		out.SetAddress(address)
-		out.SetSensitive(isSensitive)
+		out := node.StrNode(style.String(s).Selectable())
+		out.Address = address
+		out.Sensitive = isSensitive
 		return out, nil
 	case float64:
-		out := node.Str(style.Number(fmt.Sprintf("%.2f", value)).Selectable())
-		out.SetAddress(address)
-		out.SetSensitive(isSensitive)
+		out := node.StrNode(style.Number(fmt.Sprintf("%.2f", value)).Selectable())
+		out.Address = address
+		out.Sensitive = isSensitive
 		return out, nil
 	case bool:
-		out := node.Str(style.Boolean(fmt.Sprintf("%v", value)).Selectable())
-		out.SetAddress(address)
-		out.SetSensitive(isSensitive)
+		out := node.StrNode(style.Boolean(fmt.Sprintf("%v", value)).Selectable())
+		out.Address = address
+		out.Sensitive = isSensitive
 		return out, nil
 	case nil:
-		out := node.Str(style.Null("null").Selectable())
-		out.SetAddress(address)
-		out.SetSensitive(isSensitive)
+		out := node.StrNode(style.Null("null").Selectable())
+		out.Address = address
+		out.Sensitive = isSensitive
 		return out, nil
 	case []any:
 		return jsonArrayNode(address, value, sensitiveValues)

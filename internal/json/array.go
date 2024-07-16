@@ -7,32 +7,29 @@ import (
 	"github.com/Art-S-D/tfx/internal/style"
 )
 
-func emptyArray(address string) *node.Node {
-	out := &node.Node{}
-	s := style.Default("[]").Selectable()
-	out.SetCollapsed(s)
-	out.SetExpanded(s)
-	out.SetAddress(address)
-	return out
-}
 func jsonArrayNode(address string, array []any, sensitiveValues any) (*node.Node, error) {
 	if len(array) == 0 {
-		return emptyArray(address), nil
+		out := node.StringNode("[]")
+		out.Address = address
+		return out, nil
 	}
 
-	out := &node.Node{}
-	out.SetAddress(address)
-	out.SetExpanded(style.Default("[").Selectable())
-	out.SetCollapsed(
-		style.Concat(
-			style.Default("["),
-			style.Preview("..."),
-			style.Default("]"),
-		).Selectable(),
-	)
+	out := &node.Node{
+		Address:  address,
+		Childer:  &node.DefaultChilder{},
+		Expander: &node.DefaultExpander{},
+		Renderer: &node.LineRenderer{
+			Expanded: style.Default("[").Selectable(),
+			Collapsed: style.Concat(
+				style.Default("["),
+				style.Preview("..."),
+				style.Default("]"),
+			).Selectable(),
+		},
+	}
 
 	if _, ok := sensitiveValues.(bool); ok {
-		out.SetSensitive(true)
+		out.Sensitive = true
 		sensitiveValues = nil
 	}
 	sensitive, ok := sensitiveValues.([]any)
@@ -50,13 +47,13 @@ func jsonArrayNode(address string, array []any, sensitiveValues any) (*node.Node
 		if err != nil {
 			return nil, err
 		}
-		parsed.IncreaseDepth()
-		parsed.AddEndingColon()
+		parsed.Indent()
+		// parsed.AddEndingColon() // TODO
 		out.AppendChild(parsed)
 	}
 
-	lastChild := node.String("]")
-	lastChild.SetAddress(address)
+	lastChild := node.StringNode("]")
+	lastChild.Address = address
 	out.AppendChild(lastChild)
 
 	return out, nil

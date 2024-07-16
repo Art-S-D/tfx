@@ -21,8 +21,15 @@ func sensitiveValues(json *tfjson.StateResource) map[string]any {
 	return sensitive
 }
 func StateResourceNode(jsonResource *tfjson.StateResource) *node.Node {
-	resource := &node.Node{}
-	resource.SetAddress(jsonResource.Address)
+	resource := &node.Node{
+		Address:  jsonResource.Address,
+		Childer:  &node.DefaultChilder{},
+		Expander: &node.DefaultExpander{},
+		Renderer: &node.LineRenderer{
+			Expanded:  resourceExpanded(jsonResource),
+			Collapsed: resourceCollapsed(jsonResource),
+		},
+	}
 
 	keys := utils.KeysOrdered(jsonResource.AttributeValues)
 	longestKey := slices.MaxFunc(keys, func(s1, s2 string) int { return len(s1) - len(s2) })
@@ -38,17 +45,17 @@ func StateResourceNode(jsonResource *tfjson.StateResource) *node.Node {
 		if err != nil {
 			panic(fmt.Errorf("failed to create state resource: %w", err))
 		}
-
-		value.SetKey(k, uint8(len(longestKey)-len(k)))
-		value.IncreaseDepth()
+		value.Renderer = &node.KeyValueRenderer{
+			Key:     k,
+			Value:   value.Renderer,
+			Padding: uint8(len(longestKey) - len(k)),
+		}
+		value.Indent()
 		resource.AppendChild(value)
 	}
 
-	resource.SetExpanded(resourceExpanded(jsonResource))
-	resource.SetCollapsed(resourceCollapsed(jsonResource))
-
-	lastChild := node.String("}")
-	lastChild.SetAddress(jsonResource.Address)
+	lastChild := node.StringNode("}")
+	lastChild.Address = jsonResource.Address
 	resource.AppendChild(lastChild)
 
 	return resource

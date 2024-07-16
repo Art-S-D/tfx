@@ -120,3 +120,19 @@ func Space() Str {
 func Spaces(count int) Str {
 	return Default(strings.Repeat(" ", count))
 }
+
+func TrimLeft(s Str) Str {
+	out := slices.Clone(s)
+	for {
+		out[0].value = strings.TrimLeft(out[0].value, " ")
+		if len(out[0].value) == 0 {
+			if len(out) == 1 {
+				return nil
+			}
+			out = out[1:]
+			continue
+		} else {
+			return out
+		}
+	}
+}

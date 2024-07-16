@@ -1,12 +1,12 @@
 package node
 
 func (n *Node) after(child *Node) *Node {
-	for i, child2 := range n.children {
+	for i, child2 := range n.Children() {
 		if child == child2 {
-			if i+1 < len(n.children) {
-				return n.children[i+1]
-			} else if n.parent != nil {
-				return n.parent.after(n)
+			if i+1 < len(n.Children()) {
+				return n.Children()[i+1]
+			} else if n.Parent != nil {
+				return n.Parent.after(n)
 			} else {
 				// should only happen for the very last node
 				return nil
@@ -17,34 +17,34 @@ func (n *Node) after(child *Node) *Node {
 }
 
 func (n *Node) Next() *Node {
-	if !n.isExpanded {
+	if !n.IsExpanded() {
 		// if the node is collapsed, ignore the children
-		return n.parent.after(n)
+		return n.Parent.after(n)
 	}
-	if len(n.children) > 0 {
-		return n.children[0]
+	if len(n.Children()) > 0 {
+		return n.Children()[0]
 	}
-	return n.parent.after(n)
+	return n.Parent.after(n)
 }
 
 // can be nil if there are no more siblings
 func (n *Node) NextSibling() *Node {
-	return n.parent.after(n)
+	return n.Parent.after(n)
 }
 
 func (n *Node) LastChild() *Node {
-	if len(n.children) == 0 || !n.isExpanded {
+	if len(n.Children()) == 0 || !n.IsExpanded() {
 		return n
 	} else {
-		return n.children[len(n.children)-1].LastChild()
+		return n.Children()[len(n.Children())-1].LastChild()
 	}
 }
 
 func (n *Node) before(child *Node) *Node {
-	for i, child2 := range n.children {
+	for i, child2 := range n.Children() {
 		if child == child2 {
 			if i > 0 {
-				return n.children[i-1].LastChild()
+				return n.Children()[i-1].LastChild()
 			} else {
 				// the node before the first child of n is n
 				return n
@@ -55,20 +55,20 @@ func (n *Node) before(child *Node) *Node {
 }
 
 func (n *Node) Previous() *Node {
-	if n.parent == nil {
+	if n.Parent == nil {
 		return nil
 	} else {
-		return n.parent.before(n)
+		return n.Parent.before(n)
 	}
 }
 
 func (n *Node) PreviousSibling() *Node {
-	for i, child := range n.parent.children {
+	for i, child := range n.Parent.Children() {
 		if child == n {
 			if i == 0 {
-				return n.parent
+				return n.Parent
 			} else {
-				return n.parent.children[i-1] // no LastChild here
+				return n.Parent.Children()[i-1] // no LastChild here
 			}
 		}
 	}

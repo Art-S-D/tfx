@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/Art-S-D/tfx/internal/cmd"
+	"github.com/Art-S-D/tfx/internal/node"
 	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/tfstate"
 	tea "github.com/charmbracelet/bubbletea"
@@ -51,6 +52,7 @@ func main() {
 	}
 
 	if terraformState.PrintOnExit != nil {
-		fmt.Println(terraformState.PrintOnExit.String())
+		terraformState.PrintOnExit.ExpandRecursively()
+		fmt.Println(node.RenderUnstyled(terraformState.PrintOnExit))
 	}
 }

@@ -94,7 +94,7 @@ func (m *TfxModel) expandAll() {
 func (m *TfxModel) collapseAll() {
 	m.root.CollapseRecursively()
 	for !m.root.HasChild(m.cursor) {
-		m.cursor = m.cursor.Parent()
+		m.cursor = m.cursor.Parent
 	}
 }
 
@@ -118,7 +118,7 @@ func (m *TfxModel) previousSibling() {
 
 func (m *TfxModel) printValue() {
 	m.cursor.ExpandRecursively()
-	m.cursor.IncreaseDepthBy(-m.cursor.Depth())
+	m.cursor.IndentBy(-m.cursor.Depth)
 	m.PrintOnExit = m.cursor
 }
 

@@ -6,7 +6,11 @@ import (
 )
 
 func RootModuleNode(json *tfjson.StateModule) *node.Node {
-	root := &node.Node{}
+	root := &node.Node{
+		Renderer: &node.NoRender{},
+		Childer:  &node.DefaultChilder{},
+		Expander: &node.NonExpandable{},
+	}
 	for _, resource := range json.Resources {
 		childResource := StateResourceNode(resource)
 		root.AppendChild(childResource)

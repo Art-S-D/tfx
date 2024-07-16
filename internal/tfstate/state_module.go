@@ -7,25 +7,29 @@ import (
 )
 
 func StateModuleNode(json *tfjson.StateModule) *node.Node {
-	module := &node.Node{}
-	module.SetAddress(json.Address)
+	module := &node.Node{
+		Address:  json.Address,
+		Childer:  &node.DefaultChilder{},
+		Expander: &node.DefaultExpander{},
+		Renderer: &node.LineRenderer{
+			Expanded:  expandedStateModule(json),
+			Collapsed: collapsedStateModule(json),
+		},
+	}
 
 	for _, resource := range json.Resources {
 		childResource := StateResourceNode(resource)
-		childResource.IncreaseDepth()
+		childResource.Indent()
 		module.AppendChild(childResource)
 	}
 	for _, mod := range json.ChildModules {
 		childModule := StateModuleNode(mod)
-		childModule.IncreaseDepth()
+		childModule.Indent()
 		module.AppendChild(childModule)
 	}
 
-	module.SetExpanded(expandedStateModule(json))
-	module.SetCollapsed(collapsedStateModule(json))
-
-	lastChild := node.String("}")
-	lastChild.SetAddress(json.Address)
+	lastChild := node.StringNode("}")
+	lastChild.Address = json.Address
 	module.AppendChild(lastChild)
 
 	return module

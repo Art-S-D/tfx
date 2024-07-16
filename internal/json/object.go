@@ -10,33 +10,29 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-func emptyObject(address string) *node.Node {
-	out := &node.Node{}
-	s := style.Default("{}").Selectable()
-	out.SetCollapsed(s)
-	out.SetExpanded(s)
-	out.SetAddress(address)
-	return out
-}
-
 func jsonObjectNode(address string, object map[string]any, sensitiveValues any) (*node.Node, error) {
 	if len(object) == 0 {
-		return emptyObject(address), nil
+		out := node.StringNode("{}")
+		out.Address = address
+		return out, nil
 	}
 
-	out := &node.Node{}
-	out.SetAddress(address)
-	out.SetExpanded(style.Default("{").Selectable())
-	out.SetCollapsed(
-		style.Concat(
-			style.Default("{"),
-			style.Preview("..."),
-			style.Default("}"),
-		).Selectable(),
-	)
+	out := &node.Node{
+		Address:  address,
+		Expander: &node.DefaultExpander{},
+		Childer:  &node.DefaultChilder{},
+		Renderer: &node.LineRenderer{
+			Expanded: style.Default("{").Selectable(),
+			Collapsed: style.Concat(
+				style.Default("{"),
+				style.Preview("..."),
+				style.Default("}"),
+			).Selectable(),
+		},
+	}
 
 	if _, ok := sensitiveValues.(bool); ok {
-		out.SetSensitive(true)
+		out.Sensitive = true
 		sensitiveValues = nil
 	}
 	sensitive, ok := sensitiveValues.(map[string]any)
@@ -59,13 +55,17 @@ func jsonObjectNode(address string, object map[string]any, sensitiveValues any) 
 		if err != nil {
 			return nil, err
 		}
-		parsed.SetKey(k, uint8(len(longestKey)-len(k)))
-		parsed.IncreaseDepth()
+		parsed.Renderer = &node.KeyValueRenderer{
+			Key:     k,
+			Value:   parsed.Renderer,
+			Padding: uint8(len(longestKey) - len(k)),
+		}
+		parsed.Indent()
 		out.AppendChild(parsed)
 	}
 
-	lastChild := node.String("}")
-	lastChild.SetAddress(address)
+	lastChild := node.StringNode("}")
+	lastChild.Address = address
 	out.AppendChild(lastChild)
 
 	return out, nil

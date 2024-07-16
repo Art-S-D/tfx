@@ -8,7 +8,7 @@ import (
 )
 
 func (m *TfxModel) previewLine() string {
-	selectionName := m.cursor.Address()
+	selectionName := m.cursor.Address
 
 	helpText := "[?]help [q]quit "
 	var previewLine string
