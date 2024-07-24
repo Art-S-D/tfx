@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"github.com/Art-S-D/tfx/internal/cmd"
+	"github.com/Art-S-D/tfx/internal/cmd/preview"
+	tfxcontext "github.com/Art-S-D/tfx/internal/cmd/tfxcontext"
 	"github.com/Art-S-D/tfx/internal/style"
 	"github.com/Art-S-D/tfx/internal/tfstate"
 	tea "github.com/charmbracelet/bubbletea"
@@ -36,13 +38,20 @@ func main() {
 		panic(fmt.Errorf("failed to read json state %w", err))
 	}
 
-	terraformState := cmd.NewModel(
-		tfstate.RootModuleNode(plan.Values.RootModule),
-		style.DefaultTheme,
-	)
+	context := &tfxcontext.TfxContext{Theme: style.DefaultTheme}
+	rootPreview := &preview.PreviewModel{
+		Ctx: context,
+	}
+
+	rootModule := tfstate.RootModuleNode(plan.Values.RootModule)
+	if len(rootModule.Children()) == 0 {
+		fmt.Println("The state is empty")
+		return
+	}
+	rootPreview.SetRootNode(rootModule)
 
 	p := tea.NewProgram(
-		terraformState,
+		rootPreview,
 		tea.WithAltScreen(),
 		tea.WithMouseCellMotion(),
 	)
@@ -50,7 +59,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	if terraformState.PrintOnExit != nil {
-		fmt.Println(terraformState.PrintOnExit.String())
+	if context.PrintOnExit != nil {
+		fmt.Println(context.PrintOnExit.String())
 	}
 }

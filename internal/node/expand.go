@@ -1,6 +1,9 @@
 package node
 
 func (n *Node) Expand() {
+	if n.sensitive {
+		return
+	}
 	n.isExpanded = true
 }
 

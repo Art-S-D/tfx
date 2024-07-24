@@ -1,8 +1,9 @@
-package cmd
+package help
 
 import (
 	"fmt"
 
+	tfxcontext "github.com/Art-S-D/tfx/internal/cmd/tfxcontext"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -41,22 +42,34 @@ var helpText string = `
         .                   dig
 `
 
-func (m *TfxModel) helpScreen() string {
-	help := lipgloss.PlaceVertical(m.screenHeight-1, lipgloss.Top, helpText)
+type HelpModel struct {
+	Ctx         *tfxcontext.TfxContext
+	ParentModel tea.Model
+}
+
+func (m *HelpModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m *HelpModel) View() string {
+	help := lipgloss.PlaceVertical(m.Ctx.ScreenHeight-1, lipgloss.Top, helpText)
 
 	lastLine := ": press q or ? to close help"
-	lastLine = lipgloss.PlaceHorizontal(m.screenWidth, lipgloss.Left, lastLine)
-	lastLine = m.theme.Selection(lastLine).String()
+	lastLine = lipgloss.PlaceHorizontal(m.Ctx.ScreenWidth, lipgloss.Left, lastLine)
+	lastLine = m.Ctx.Theme.Selection(lastLine).String()
 
 	return fmt.Sprintf("%s\n%s", help, lastLine)
 }
 
-func (m *TfxModel) updateHelpView(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *HelpModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m.Ctx.Update(msg)
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "ctrl+c":
+			return m, tea.Quit
 		case "?", "q", "esc":
-			m.state = viewState
+			return m.ParentModel, nil
 		}
 	}
 	return m, nil

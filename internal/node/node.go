@@ -43,6 +43,11 @@ func (n *Node) SetExpanded(line style.Str)  { n.expanded = line }
 func (n *Node) SetCollapsed(line style.Str) { n.collapsed = line }
 func (n *Node) SetAddress(addr string)      { n.address = addr }
 func (n *Node) SetSensitive(sensitive bool) { n.sensitive = sensitive }
+func (n *Node) Children() []*Node           { return n.children }
+
+func (n *Node) IsRootModule() bool {
+	return n.address == ""
+}
 
 func (n *Node) HasChild(child *Node) bool {
 	return slices.Contains(n.children, child)
@@ -72,4 +77,14 @@ func (n *Node) IncreaseDepthBy(by uint8) {
 	for _, child := range n.children {
 		child.IncreaseDepthBy(by)
 	}
+}
+
+func (n *Node) Clone() *Node {
+	out := *n
+	out.parent = nil
+	out.children = []*Node{}
+	for _, child := range n.children {
+		out.AppendChild(child.Clone())
+	}
+	return &out
 }

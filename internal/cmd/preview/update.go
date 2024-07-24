@@ -1,39 +1,19 @@
-package cmd
+package preview
 
 import (
+	"github.com/Art-S-D/tfx/internal/cmd/help"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m *TfxModel) clampScreenStart() {
-	end := m.screenStart
-	for i := 0; i < m.screenHeight-2; i++ {
-		next := end.Next()
-		if next == nil {
-			// screenEnd is at the end of the screen => we need to move the screenStart up
-			previous := m.screenStart.Previous()
-			if previous == m.root {
-				// screenEnd is at the end and screenStart is at the start
-				// => meaning the state is too small to cover the entire screen
-				// so we can just stop
-				return
-			}
-			m.screenStart = previous
-		} else {
-			// otherwise just go down
-			end = end.Next()
-		}
-	}
-}
-
-func (m *TfxModel) screenUp() (hasMoved bool) {
-	previous := m.screenStart.Previous()
-	if previous == m.root {
+func (m *PreviewModel) screenUp() (hasMoved bool) {
+	if m.screenStart == m.node {
 		return false
 	}
+	previous := m.screenStart.Previous()
 	m.screenStart = previous
 	return true
 }
-func (m *TfxModel) screenDown() (hasMoved bool) {
+func (m *PreviewModel) screenDown() (hasMoved bool) {
 	next := m.screenEnd().Next()
 	if next == nil {
 		return false
@@ -42,15 +22,15 @@ func (m *TfxModel) screenDown() (hasMoved bool) {
 	return true
 }
 
-func (m *TfxModel) cursorUp() {
-	previous := m.cursor.Previous()
-	if previous != m.root {
-		m.cursor = previous
+func (m *PreviewModel) cursorUp() {
+	if m.cursor == m.node {
+		return
 	}
+	m.cursor = m.cursor.Previous()
 	m.moveScreenToCursor()
 }
 
-func (m *TfxModel) cursorDown() {
+func (m *PreviewModel) cursorDown() {
 	next := m.cursor.Next()
 	if next != nil {
 		m.cursor = next
@@ -58,47 +38,49 @@ func (m *TfxModel) cursorDown() {
 	m.moveScreenToCursor()
 }
 
-func (m *TfxModel) goToBottom() {
-	m.cursor = m.root.LastChild()
+func (m *PreviewModel) goToBottom() {
+	m.cursor = m.node.LastChild()
 	m.screenStart = m.cursor
-	for i := 0; i < m.screenHeight-2; i++ {
-		m.screenStart = m.screenStart.Previous()
+	for i := 0; i < m.Ctx.ScreenHeight-2; i++ {
+		if m.screenStart != m.node {
+			m.screenStart = m.screenStart.Previous()
+		}
 	}
 }
 
-func (m *TfxModel) pageDown() {
-	for i := 0; i < m.screenHeight-1; i++ {
+func (m *PreviewModel) pageDown() {
+	for i := 0; i < m.Ctx.ScreenHeight-1; i++ {
 		m.cursorDown()
 	}
 }
-func (m *TfxModel) pageUp() {
-	for i := 0; i < m.screenHeight-1; i++ {
+func (m *PreviewModel) pageUp() {
+	for i := 0; i < m.Ctx.ScreenHeight-1; i++ {
 		m.cursorUp()
 	}
 }
 
-func (m *TfxModel) halfPageDown() {
-	for i := 0; i < (m.screenHeight-1)/2; i++ {
+func (m *PreviewModel) halfPageDown() {
+	for i := 0; i < (m.Ctx.ScreenHeight-1)/2; i++ {
 		m.cursorDown()
 	}
 }
-func (m *TfxModel) halfPageUp() {
-	for i := 0; i < (m.screenHeight-1)/2; i++ {
+func (m *PreviewModel) halfPageUp() {
+	for i := 0; i < (m.Ctx.ScreenHeight-1)/2; i++ {
 		m.cursorUp()
 	}
 }
 
-func (m *TfxModel) expandAll() {
-	m.root.ExpandRecursively()
+func (m *PreviewModel) expandAll() {
+	m.node.ExpandRecursively()
 }
-func (m *TfxModel) collapseAll() {
-	m.root.CollapseRecursively()
-	for !m.root.HasChild(m.cursor) {
+func (m *PreviewModel) collapseAll() {
+	m.node.CollapseRecursively()
+	for !m.node.HasChild(m.cursor) {
 		m.cursor = m.cursor.Parent()
 	}
 }
 
-func (m *TfxModel) nextSibling() {
+func (m *PreviewModel) nextSibling() {
 	nextSibling := m.cursor.NextSibling()
 	if nextSibling == nil {
 		m.cursorDown()
@@ -108,26 +90,35 @@ func (m *TfxModel) nextSibling() {
 		m.moveScreenToCursor()
 	}
 }
-func (m *TfxModel) previousSibling() {
+func (m *PreviewModel) previousSibling() {
+	if m.cursor == m.node {
+		return
+	}
 	previousSibling := m.cursor.PreviousSibling()
-	if previousSibling != nil && previousSibling != m.root {
+	if previousSibling != nil {
 		m.cursor = previousSibling
 		m.moveScreenToCursor()
 	}
 }
 
-func (m *TfxModel) printValue() {
+func (m *PreviewModel) printValue() {
 	m.cursor.ExpandRecursively()
 	m.cursor.IncreaseDepthBy(-m.cursor.Depth())
-	m.PrintOnExit = m.cursor
+	m.Ctx.PrintOnExit = m.cursor
 }
 
-func (m *TfxModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *PreviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m.Ctx.Update(msg)
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q", "esc":
+		case "ctrl+c":
 			return m, tea.Quit
+		case "q", "esc":
+			if m.ParentModel == nil {
+				return m, tea.Quit
+			}
+			return m.ParentModel, nil
 		case "up", "k":
 			m.cursorUp()
 		case "down", "j":
@@ -142,7 +133,10 @@ func (m *TfxModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursor.CollapseRecursively()
 			m.clampScreenStart()
 		case "?":
-			m.state = showHelp
+			return &help.HelpModel{
+				Ctx:         m.Ctx,
+				ParentModel: m,
+			}, nil
 		case "enter", "l", "right":
 			m.moveScreenToCursor()
 			m.cursor.Expand()
@@ -172,25 +166,24 @@ func (m *TfxModel) updateStateView(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "P":
 			m.printValue()
 			return m, tea.Quit
+		case "p":
+			nextModel := &PreviewModel{
+				Ctx:         m.Ctx,
+				ParentModel: m,
+			}
+			node := m.cursor.Clone()
+			node.Expand()
+			node.SetKey("", 0)
+			node.IncreaseDepthBy(-node.Depth())
+			nextModel.SetNode(node)
+			return nextModel, nil
 		case "r":
 			m.cursor.Reveal()
 		}
 	case tea.WindowSizeMsg:
-		m.screenHeight = msg.Height
-		m.screenWidth = msg.Width
 		m.clampScreenStart()
 	case tea.MouseMsg:
 		m.handleMouseEvent(msg)
 	}
 	return m, nil
-}
-
-func (m *TfxModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch m.state {
-	case showHelp:
-		return m.updateHelpView(msg)
-	case viewState:
-		return m.updateStateView(msg)
-	}
-	panic("unknown state")
 }

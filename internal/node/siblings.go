@@ -1,6 +1,10 @@
 package node
 
 func (n *Node) after(child *Node) *Node {
+	if n == nil {
+		return nil
+	}
+
 	for i, child2 := range n.children {
 		if child == child2 {
 			if i+1 < len(n.children) {
@@ -17,7 +21,7 @@ func (n *Node) after(child *Node) *Node {
 }
 
 func (n *Node) Next() *Node {
-	if !n.isExpanded {
+	if n.sensitive || !n.isExpanded {
 		// if the node is collapsed, ignore the children
 		return n.parent.after(n)
 	}
