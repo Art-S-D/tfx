@@ -47,10 +47,7 @@ func StateResourceNode(jsonResource *tfjson.StateResource) *node.Node {
 	resource.SetExpanded(resourceExpanded(jsonResource))
 	resource.SetCollapsed(resourceCollapsed(jsonResource))
 
-	lastChild := node.String("}")
-	lastChild.SetAddress(jsonResource.Address)
-	resource.AppendChild(lastChild)
-
+	resource.AppendEndNode("}")
 	return resource
 }
 

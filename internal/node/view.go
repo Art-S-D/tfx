@@ -56,6 +56,10 @@ func (n *Node) View() style.Str {
 
 // raw render
 func (n *Node) String() string {
+	if n.sensitive {
+		return "(sensitive)"
+	}
+
 	var sb strings.Builder
 
 	sb.WriteString(strings.Repeat(" ", int(n.depth)*INDENT_WIDTH))

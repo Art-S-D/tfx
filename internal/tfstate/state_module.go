@@ -24,10 +24,7 @@ func StateModuleNode(json *tfjson.StateModule) *node.Node {
 	module.SetExpanded(expandedStateModule(json))
 	module.SetCollapsed(collapsedStateModule(json))
 
-	lastChild := node.String("}")
-	lastChild.SetAddress(json.Address)
-	module.AppendChild(lastChild)
-
+	module.AppendEndNode("}")
 	return module
 }
 

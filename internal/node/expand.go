@@ -4,11 +4,11 @@ func (n *Node) Expand() {
 	if n.sensitive {
 		return
 	}
-	n.isExpanded = true
+	n.Target().isExpanded = true
 }
 
 func (n *Node) Collapse() {
-	n.isExpanded = false
+	n.Target().isExpanded = false
 }
 
 func (n *Node) ExpandRecursively() {

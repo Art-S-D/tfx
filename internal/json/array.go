@@ -55,9 +55,6 @@ func jsonArrayNode(address string, array []any, sensitiveValues any) (*node.Node
 		out.AppendChild(parsed)
 	}
 
-	lastChild := node.String("]")
-	lastChild.SetAddress(address)
-	out.AppendChild(lastChild)
-
+	out.AppendEndNode("]")
 	return out, nil
 }

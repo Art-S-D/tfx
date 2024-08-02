@@ -64,9 +64,6 @@ func jsonObjectNode(address string, object map[string]any, sensitiveValues any) 
 		out.AppendChild(parsed)
 	}
 
-	lastChild := node.String("}")
-	lastChild.SetAddress(address)
-	out.AppendChild(lastChild)
-
+	out.AppendEndNode("}")
 	return out, nil
 }

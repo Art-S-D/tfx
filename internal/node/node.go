@@ -13,6 +13,7 @@ const INDENT_WIDTH = 4
 type Node struct {
 	address    string
 	isExpanded bool
+	isEndNode  bool // for stuff like } or ]
 	depth      uint8
 
 	// only represents the first line of the Node
@@ -44,6 +45,20 @@ func (n *Node) SetCollapsed(line style.Str) { n.collapsed = line }
 func (n *Node) SetAddress(addr string)      { n.address = addr }
 func (n *Node) SetSensitive(sensitive bool) { n.sensitive = sensitive }
 func (n *Node) Children() []*Node           { return n.children }
+
+func (n *Node) Target() *Node {
+	if n.isEndNode {
+		return n.parent
+	}
+	return n
+}
+
+func (n *Node) AppendEndNode(content string) {
+	endNode := String(content)
+	endNode.isEndNode = true
+	endNode.address = n.address
+	n.AppendChild(endNode)
+}
 
 func (n *Node) IsRootModule() bool {
 	return n.address == ""

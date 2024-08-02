@@ -104,6 +104,7 @@ func (m *PreviewModel) previousSibling() {
 func (m *PreviewModel) printValue() {
 	m.cursor.ExpandRecursively()
 	m.cursor.IncreaseDepthBy(-m.cursor.Depth())
+	m.cursor.SetKey("", 0)
 	m.Ctx.PrintOnExit = m.cursor
 }
 
@@ -127,10 +128,10 @@ func (m *PreviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.goToBottom()
 		case "L", "shift+right":
 			m.moveScreenToCursor()
-			m.cursor.ExpandRecursively()
+			m.cursor.Target().ExpandRecursively()
 		case "H", "shift+left":
 			m.moveScreenToCursor() // prevents being stuck in the void below the state if a bug section is collapsed
-			m.cursor.CollapseRecursively()
+			m.cursor.Target().CollapseRecursively()
 			m.clampScreenStart()
 		case "?":
 			return &help.HelpModel{
@@ -139,9 +140,10 @@ func (m *PreviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}, nil
 		case "enter", "l", "right":
 			m.moveScreenToCursor()
-			m.cursor.Expand()
+			m.cursor.Target().Expand()
 		case "backspace", "h", "left":
 			m.moveScreenToCursor()
+			m.cursor = m.cursor.Target() // if pointing to a } or ], move to the start of the object/array
 			m.cursor.Collapse()
 			// need to clamp the screen start in case an element at the bottom of the screen collapsed
 			m.clampScreenStart()
@@ -171,7 +173,10 @@ func (m *PreviewModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				Ctx:         m.Ctx,
 				ParentModel: m,
 			}
-			node := m.cursor.Clone()
+
+			// have to call Target() in case we are pointing to a } or ] to get the whole object/array
+			node := m.cursor.Target().Clone()
+
 			node.Expand()
 			node.SetKey("", 0)
 			node.IncreaseDepthBy(-node.Depth())
