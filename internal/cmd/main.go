@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/Art-S-D/tfx/internal/cmd"
 	"github.com/Art-S-D/tfx/internal/cmd/preview"
 	tfxcontext "github.com/Art-S-D/tfx/internal/cmd/tfxcontext"
 	"github.com/Art-S-D/tfx/internal/style"
@@ -25,7 +24,7 @@ func main() {
 		defer f.Close()
 	}
 
-	args := cmd.ParseArgs()
+	args := parseArgs()
 
 	jsonState, err := io.ReadAll(args.Src)
 	if err != nil {

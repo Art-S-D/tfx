@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"flag"
@@ -12,7 +12,7 @@ type Args struct {
 	Src io.Reader
 }
 
-func ParseArgs() *Args {
+func parseArgs() *Args {
 	var out Args
 
 	fs := flag.NewFlagSet("tfx", flag.ExitOnError)
