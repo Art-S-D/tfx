@@ -20,8 +20,7 @@ func main() {
 		os.Remove("debug.log")
 		f, err := tea.LogToFile("debug.log", "debug")
 		if err != nil {
-			fmt.Println("fatal:", err)
-			os.Exit(1)
+			panic(err.Error())
 		}
 		defer f.Close()
 	}
@@ -30,12 +29,15 @@ func main() {
 
 	jsonState, err := io.ReadAll(args.Src)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println("failed to read input file:", err)
+		os.Exit(1)
 	}
+
 	var plan tfjson.State
 	err = json.Unmarshal(jsonState, &plan)
 	if err != nil {
-		panic(fmt.Errorf("failed to read json state %w", err))
+		fmt.Println("failed to read json:", err)
+		os.Exit(1)
 	}
 
 	context := &tfxcontext.TfxContext{Theme: style.DefaultTheme}
@@ -46,17 +48,18 @@ func main() {
 	rootModule := tfstate.RootModuleNode(plan.Values.RootModule)
 	if len(rootModule.Children()) == 0 {
 		fmt.Println("The state is empty")
-		return
+		os.Exit(1)
 	}
 	rootPreview.SetRootNode(rootModule)
 
-	p := tea.NewProgram(
+	program := tea.NewProgram(
 		rootPreview,
 		tea.WithAltScreen(),
 		tea.WithMouseCellMotion(),
 	)
-	if _, err := p.Run(); err != nil {
-		panic(err.Error())
+	if _, err := program.Run(); err != nil {
+		fmt.Println("unexpected error:", err)
+		os.Exit(1)
 	}
 
 	if context.PrintOnExit != nil {
