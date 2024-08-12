@@ -55,7 +55,7 @@ func (m *PreviewModel) moveScreenToCursor() {
 
 	// try to scroll up to the cursor
 	current = m.screenStart
-	for current != m.node {
+	for current != nil {
 		if current == m.cursor {
 			m.screenStart = current
 			return

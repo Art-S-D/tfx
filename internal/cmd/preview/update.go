@@ -26,7 +26,13 @@ func (m *PreviewModel) cursorUp() {
 	if m.cursor == m.node {
 		return
 	}
-	m.cursor = m.cursor.Previous()
+
+	previous := m.cursor.Previous()
+	if previous.IsRootModule() {
+		return
+	}
+
+	m.cursor = previous
 	m.moveScreenToCursor()
 }
 
