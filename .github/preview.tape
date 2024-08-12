@@ -1,24 +1,27 @@
-Output preview.gif
+Output .github/preview.gif
+
+Require tfx
 
 Set Framerate 60
 Set FontSize 30
 
-Set Padding 6
-Set Margin 10
-
-Set BorderRadius 10
+Set Padding 20
 
 Set Width 1800
 Set Height 800
 
+Set TypingSpeed 200ms
 
-Set TypingSpeed 250ms
+Hide
+Type@1ms "cd tests/s3 && clear"
+Enter
+Show
 
 Type "terraform show -json | tfx"
 
 Sleep 1s
 Enter
-Sleep 4s
+Sleep 3s
 
 Enter
 Sleep 2s
